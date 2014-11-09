@@ -5,6 +5,7 @@
 #include <ccore/opengl.h>
 
 #include <ccNoise/ccNoise.h>
+#include <ccRandom/ccRandom.h>
 
 #include <gl/GL.h>
 
@@ -12,6 +13,8 @@
 #define HEIGHT 512
 
 GLuint texture;
+
+ccrGenerator randomizer;
 
 typedef struct {
 	unsigned char r, g, b, a;
@@ -22,9 +25,9 @@ static void generatePerlinNoise()
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise;
 
-	ccnGeneratePerlinNoise2D(42, WIDTH, HEIGHT, 5, 50, 0.5f, &noise);
+	ccnGeneratePerlinNoise2D(ccrGenerateUint(&randomizer), WIDTH, HEIGHT, 5, 20, 0.5f, &noise);
 
-	for(unsigned int i = 0; i < WIDTH*HEIGHT; i++) {
+	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
 		pixels[i].a = 255;
 	}
@@ -37,6 +40,8 @@ static void generatePerlinNoise()
 int main(int argc, char **argv)
 {
 	bool loop = true;
+
+	ccrSeed(&randomizer, 42);
 
 	ccDisplayInitialize();
 

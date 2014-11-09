@@ -27,7 +27,7 @@ extern "C"
 
 // Creates a 2D perlin noise
 // persistence 0 - 0.5
-int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int height, unsigned int octaves, unsigned int maxOctave, float persistence, float **buffer);
+	int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int height, unsigned int octaves, unsigned int maxOctave, float octavePersistence, float **buffer2);
 
 #ifdef __cplusplus
 }
