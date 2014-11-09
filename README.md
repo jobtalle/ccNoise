@@ -1,4 +1,4 @@
 ccNoise
 =======
 
-A lightweight noise library
+A lightweight coherent noise library
