@@ -25,7 +25,7 @@ static void generatePerlinNoise()
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise;
 
-	ccnGeneratePerlinNoise2D(ccrGenerateUint(&randomizer), WIDTH, HEIGHT, 5, 20, 0.5f, &noise);
+	ccnGeneratePerlinNoise2D(ccrGenerateUint(&randomizer) ^ 42, WIDTH, HEIGHT, 5, 64, 0.5f, &noise);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
