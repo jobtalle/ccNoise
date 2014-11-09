@@ -1,11 +1,11 @@
 //__________________________________________________________________________________//
 //                                                                                  //
-//                               _   _       _                                      //
-//                              | \ | |     (_)                                     //
-//                       ___ ___|  \| | ___  _ ___  ___                             //
-//                      / __/ __| . ` |/ _ \| / __|/ _ \                            //
-//                     | (_| (__| |\  | (_) | \__ \  __/                            //
-//                      \___\___|_| \_|\___/|_|___/\___| 1.0                        //
+//                                 _   _       _                                    //
+//                                | \ | |     (_)                                   //
+//                         ___ ___|  \| | ___  _ ___  ___                           //
+//                        / __/ __| . ` |/ _ \| / __|/ _ \                          //
+//                       | (_| (__| |\  | (_) | \__ \  __/                          //
+//                        \___\___|_| \_|\___/|_|___/\___| 1.0                      //
 //                                                                                  //
 //                                                                                  //
 //             Copyright (C) 2014 \ Job Talle (job@ccore.org)                       //
@@ -25,7 +25,9 @@ extern "C"
 {
 #endif
 
-
+// Creates a 2D perlin noise
+// persistence 0 - 0.5
+int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int height, unsigned int octaves, unsigned int maxOctave, float persistence, float **buffer);
 
 #ifdef __cplusplus
 }
