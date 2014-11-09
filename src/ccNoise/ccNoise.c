@@ -1,0 +1,2 @@
+#include <ccNoise/ccNoise.h>
+
