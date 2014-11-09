@@ -13,9 +13,9 @@ static float _ccnInterpolateLinear(float a, float b, float x)
 
 static float _ccnInterpolateCosine(float a, float b, float x)
 {
-	float factor = (1 - ccTriCosDeg(x * 180)) * .5f;
+	float factor = (1.0f - ccTriCosDeg((unsigned int)(x * 180.0f))) * .5f;
 
-	return a * (1 - factor) + b * factor;
+	return a * (1.0f - factor) + b * factor;
 }
 
 static float _ccnInterpolateCubic(float a, float b, float c, float d, float x)
@@ -30,7 +30,7 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 	unsigned int i, j;
 	unsigned int bufferSize = width * height;
 	unsigned int octaveSize;
-	float *randomValues;
+	float factor = 0.5f;
 
 	ccrGenerator randomizer;
 
@@ -39,14 +39,14 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 	ccrSeed(&randomizer, seed);
 	octaveSize = maxOctave;
 	
-	for(i = 0; i < 1; i++) { // TODO: octaves
+	for(i = 0; i < octaves; i++) { // TODO: octaves
 		unsigned int octavesWidth = _CCN_CEIL_DIV_INT(width, octaveSize) + 1;
 		unsigned int octavesHeight = _CCN_CEIL_DIV_INT(height, octaveSize) + 1;
 		unsigned int octavesTotal = octavesWidth * octavesHeight;
 
 		unsigned int x, y;
+		float *randomValues = malloc(sizeof(float)* octavesTotal);
 
-		randomValues = malloc(sizeof(float)* octavesTotal);
 		for(j = 0; j < octavesTotal; j++) {
 			randomValues[j] = (float)(ccrGenerateUint(&randomizer) / 4294967295.0f); // TODO: implement ccrGenerateFloat
 		}
@@ -62,7 +62,7 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 			topVal = _ccnInterpolateCosine(randomValues[left + (y / octaveSize) * octavesWidth], randomValues[right + (y / octaveSize) * octavesWidth], (float)((float)(x % octaveSize) / octaveSize));
 			bottomVal = _ccnInterpolateCosine(randomValues[left + ((y / octaveSize) + 1) * octavesWidth], randomValues[right + ((y / octaveSize) + 1) * octavesWidth], (float)((float)(x % octaveSize) / octaveSize));
 
-			buffer[j] += _ccnInterpolateCosine(topVal, bottomVal, (float)((float)(y % octaveSize) / octaveSize));
+			buffer[j] += _ccnInterpolateCosine(topVal, bottomVal, (float)((float)(y % octaveSize) / octaveSize)) * factor;
 
 			x++;
 			if(x == width) {
@@ -74,6 +74,7 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 		free(randomValues);
 
 		octaveSize = (unsigned int)((float)octaveSize * octavePersistence);
+		factor /= 2;
 	}
 
 	*buffer2 = buffer;
