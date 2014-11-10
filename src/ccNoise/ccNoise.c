@@ -32,7 +32,7 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 	unsigned int octaveSize;
 	float factor = 0.5f;
 
-	ccrGenerator randomizer;
+	ccRandomizer randomizer;
 
 	float *buffer = calloc(bufferSize, sizeof(float));
 	
@@ -74,7 +74,8 @@ int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int
 		free(randomValues);
 
 		octaveSize = (unsigned int)((float)octaveSize * octavePersistence);
-		factor /= 2;
+		if(octaveSize == 0) break;
+		factor *= 0.5f;
 	}
 
 	*buffer2 = buffer;
