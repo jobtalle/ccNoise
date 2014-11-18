@@ -25,9 +25,12 @@ extern "C"
 {
 #endif
 
-// Creates a 2D perlin noise
+// Create an unique as possible ID for a coordinate
+unsigned int ccnCoordinateUid(unsigned int dimensions, int *values);
+
+// Creates n-dimensional perlin noise
 // persistence 0 - 0.5
-	int ccnGeneratePerlinNoise2D(unsigned int seed, unsigned int width, unsigned int height, unsigned int octaves, unsigned int maxOctave, float octavePersistence, float **buffer2);
+void ccnGenerateValueNoise(unsigned int seed, float **buffer, unsigned int dimensions, unsigned int *sizes, unsigned int octaves, unsigned int maxOctave, float octavePersistence);
 
 #ifdef __cplusplus
 }

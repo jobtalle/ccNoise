@@ -3,6 +3,7 @@
 #include <ccore/display.h>
 #include <ccore/window.h>
 #include <ccore/opengl.h>
+#include <ccore/time.h>
 
 #include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
@@ -23,9 +24,11 @@ typedef struct {
 static void generatePerlinNoise()
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
-	float *noise;
+	float *noise = NULL;
+	unsigned int sizes[2] = {WIDTH, HEIGHT};
 
-	ccnGeneratePerlinNoise2D(ccrGenerateUint(&randomizer) ^ 42, WIDTH, HEIGHT, 8, 60, 0.5f, &noise);
+	//noise = ccnGeneratePerlinNoise(ccrGenerateUint(&randomizer) ^ 42, WIDTH, HEIGHT, 5, 90, 0.5f);
+	ccnGenerateValueNoise(ccrGenerateUint(&randomizer) ^ 42, &noise, 2, sizes, 5, 90, 0.5f);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
@@ -35,13 +38,38 @@ static void generatePerlinNoise()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	free(pixels);
+	free(noise);
+}
+
+static void testGridNumberer(void)
+{
+#define GRIDRADIUS 2
+
+	struct coordinates{
+		int x, y;
+	};
+
+	struct coordinates c;
+	int i;
+
+	for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
+		for(i = -GRIDRADIUS; i <= GRIDRADIUS; i++) printf("----"); printf("-");
+		printf("\n|");
+		for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
+			printf(" %d |", ccnCoordinateUid(2, &c));
+		}
+		printf("\n");
+	}
+	for(i = -GRIDRADIUS; i <= GRIDRADIUS; i++) printf("----"); printf("-\n");
 }
 
 int main(int argc, char **argv)
 {
 	bool loop = true;
+	
+	testGridNumberer();
 
-	ccrSeed(&randomizer, 42);
+	ccrSeed(&randomizer, (unsigned int)ccTimeNanoseconds());
 
 	ccDisplayInitialize();
 
@@ -68,7 +96,7 @@ int main(int argc, char **argv)
 			if(ccWindowEventGet().type == CC_EVENT_KEY_DOWN) {
 				switch(ccWindowEventGet().keyCode) {
 				case CC_KEY_SPACE:
-					printf("Rendering perlin noise...");
+					printf("Rendering perlin noise...\n");
 					generatePerlinNoise();
 					printf("done.\n");
 					break;
