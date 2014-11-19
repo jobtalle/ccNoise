@@ -46,21 +46,23 @@ static void testGridNumberer(void)
 #define GRIDRADIUS 2
 
 	struct coordinates{
-		int x, y;
+		int x, y, z;
 	};
 
 	struct coordinates c;
-	int i;
 
-	for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
-		for(i = -GRIDRADIUS; i <= GRIDRADIUS; i++) printf("----"); printf("-");
-		printf("\n|");
-		for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
-			printf(" %d |", ccnCoordinateUid(2, &c));
+	c.z = -1;
+
+	for(c.z = -GRIDRADIUS; c.z <= GRIDRADIUS; c.z++) {
+		for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
+			printf("\n");
+			for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
+				printf("%d\t", ccnCoordinateUid(3, (int*)&c));
+			}
+			printf("\n");
 		}
 		printf("\n");
 	}
-	for(i = -GRIDRADIUS; i <= GRIDRADIUS; i++) printf("----"); printf("-\n");
 }
 
 int main(int argc, char **argv)

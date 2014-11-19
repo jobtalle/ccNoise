@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdio.h>
+
 #include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
 #include <ccTrigonometry/ccTrigonometry.h>
@@ -43,27 +45,36 @@ static unsigned int _ccnAbsMax(unsigned int elementCount, unsigned int *elements
 static unsigned int _ccnIntPow(unsigned int base, unsigned int power)
 {
 	unsigned int i;
-	unsigned int result = base;
+	unsigned int result = 0;
 	
-	for(i = 1; i < power; i++) {
-		result *= base;
+	for(i = 0; i < power; i++) {
+		if(result == 0) {
+			result = base;
+		}
+		else {
+			result *= base;
+		}
 	}
 
 	return result;
 }
 
-unsigned int ccnCoordinateUid(unsigned int dimensions, int *values)
+unsigned int ccnCoordinateUid(unsigned int dimensions, int *coordinate)
 {
-	unsigned int i;
+	int i;
 	unsigned int uid;
-	unsigned int shell = _ccnAbsMax(dimensions, values);
-	unsigned int startVal = _ccnIntPow(((shell - 1) << 1) + 1, dimensions);
+	unsigned int shell = _ccnAbsMax(dimensions, coordinate);
+	unsigned int shellDiameter = ((shell - 1) << 1) + 1;
+	
+	if(shell == 0) return 0;
 
-	uid = _ccnIntPow(((shell - 1) << 1) + 1, dimensions);
-
-	for(i = 0; i < dimensions; i++) {
-		uid += values[dimensions - i - 1] + shell;
+	uid = _ccnIntPow(shellDiameter, dimensions);
+	/*
+	for(i = dimensions - 1; i >= 0; i--) {
+		uid += (coordinate[i] + shell) * (_ccnIntPow(shellDiameter, i) - _ccnIntPow(shellDiameter - 2, i));
 	}
+	*/
+	//uid += coordinate[0] + shell;
 
 	return uid;
 }
