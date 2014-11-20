@@ -43,7 +43,7 @@ static void generatePerlinNoise()
 
 static void testGridNumberer(void)
 {
-#define GRIDRADIUS 2
+#define GRIDRADIUS 1
 
 	struct coordinates{
 		int x, y, z;

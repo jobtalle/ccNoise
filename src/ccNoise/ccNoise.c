@@ -45,36 +45,39 @@ static unsigned int _ccnAbsMax(unsigned int elementCount, unsigned int *elements
 static unsigned int _ccnIntPow(unsigned int base, unsigned int power)
 {
 	unsigned int i;
-	unsigned int result = 0;
+	unsigned int result = 1;
 	
-	for(i = 0; i < power; i++) {
-		if(result == 0) {
-			result = base;
-		}
-		else {
-			result *= base;
-		}
-	}
+	for(i = 0; i < power; i++) result *= base;
 
 	return result;
 }
 
 unsigned int ccnCoordinateUid(unsigned int dimensions, int *coordinate)
 {
-	int i;
+	unsigned int i, j;
 	unsigned int uid;
 	unsigned int shell = _ccnAbsMax(dimensions, coordinate);
-	unsigned int shellDiameter = ((shell - 1) << 1) + 1;
+	unsigned int shellDiameter = (shell << 1) + 1;
 	
 	if(shell == 0) return 0;
 
-	uid = _ccnIntPow(shellDiameter, dimensions);
-	/*
-	for(i = dimensions - 1; i >= 0; i--) {
-		uid += (coordinate[i] + shell) * (_ccnIntPow(shellDiameter, i) - _ccnIntPow(shellDiameter - 2, i));
+	uid = _ccnIntPow(shellDiameter - 2, dimensions);
+	
+	for(i = 0; i < dimensions; i++) { // Possibly reverse loop order for neatness
+		unsigned int subShellVolume = _ccnIntPow(shellDiameter, i);
+		unsigned int subShellInnerVolume = _ccnIntPow(shellDiameter - 2, i);
+		
+		if(coordinate[i] + shell > 0) {
+			if(i == 0) {
+				uid += coordinate[i] + shell;
+			}
+			else {
+				uid += subShellVolume;
+
+				uid += (subShellVolume - subShellInnerVolume) * (coordinate[i] + shell - 1);
+			}
+		}
 	}
-	*/
-	//uid += coordinate[0] + shell;
 
 	return uid;
 }
