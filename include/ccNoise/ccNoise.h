@@ -28,7 +28,7 @@ extern "C"
 #endif
 
 // Create an unique as possible ID for a coordinate
-uint64_t ccnCoordinateUid(unsigned int dimensions, int *coordinate);
+uint64_t ccnCoordinateUid(int x, int y);
 
 // Creates n-dimensional perlin noise
 // persistence 0 - 0.5

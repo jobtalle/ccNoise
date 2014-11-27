@@ -52,19 +52,15 @@ static unsigned int _ccnIntPow(unsigned int base, unsigned int power)
 	return result;
 }
 
-uint64_t ccnCoordinateUid(unsigned int dimensions, int *coordinate)
+uint64_t ccnCoordinateUid(int x, int y)
 {
-	unsigned int i, j;
-	unsigned int shell = _ccnAbsMax(dimensions, coordinate);
-	unsigned int shellDiameter = (shell << 1) + 1;
+	unsigned int shell = max(abs(x), abs(y));
+	uint64_t uid = (x + y + (shell << 1)) << 1;
 	
-	uint64_t uid = shellDiameter == 1?0:_ccnIntPow(shellDiameter - 2, dimensions); // Set UID to n-previous ID's
-
-	for(i = 0; i < dimensions; i++) {
-		uid += (coordinate[i] + shell) << 1;
-
-		if(i == 0 && shell != 0) {
-			uid -= (coordinate[i] > coordinate[i + 1] || (coordinate[i] == shell && coordinate[i + 1] == shell));
+	if(shell != 0) {
+		uid += ccTriSquared((shell << 1) - 1);
+		if(x > y || (x == shell && y == shell)) {
+			uid--;
 		}
 	}
 

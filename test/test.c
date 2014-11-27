@@ -43,7 +43,7 @@ static void generatePerlinNoise()
 
 static void testGridNumberer(void)
 {
-#define GRIDRADIUS 3
+#define GRIDRADIUS 4
 
 	struct coordinates{
 		int x, y, z;
@@ -51,16 +51,14 @@ static void testGridNumberer(void)
 
 	struct coordinates c;
 
-	for(c.z = -0; c.z <= 0; c.z++) {
-		for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
-			printf("\n");
-			for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
-				printf("%d\t", ccnCoordinateUid(2, (int*)&c));
-			}
-			printf("\n");
+	for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
+		printf("\n");
+		for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
+			printf("%d\t", ccnCoordinateUid(c.x, c.y));
 		}
 		printf("\n");
 	}
+	printf("\n");
 }
 
 int main(int argc, char **argv)
