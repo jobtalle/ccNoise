@@ -52,30 +52,19 @@ static unsigned int _ccnIntPow(unsigned int base, unsigned int power)
 	return result;
 }
 
-unsigned int ccnCoordinateUid(unsigned int dimensions, int *coordinate)
+uint64_t ccnCoordinateUid(unsigned int dimensions, int *coordinate)
 {
 	unsigned int i, j;
-	unsigned int uid;
 	unsigned int shell = _ccnAbsMax(dimensions, coordinate);
 	unsigned int shellDiameter = (shell << 1) + 1;
 	
-	if(shell == 0) return 0;
+	uint64_t uid = shellDiameter == 1?0:_ccnIntPow(shellDiameter - 2, dimensions); // Set UID to n-previous ID's
 
-	uid = _ccnIntPow(shellDiameter - 2, dimensions);
-	
-	for(i = 0; i < dimensions; i++) { // Possibly reverse loop order for neatness
-		unsigned int subShellVolume = _ccnIntPow(shellDiameter, i);
-		unsigned int subShellInnerVolume = _ccnIntPow(shellDiameter - 2, i);
-		
-		if(coordinate[i] + shell > 0) {
-			if(i == 0) {
-				uid += coordinate[i] + shell;
-			}
-			else {
-				uid += subShellVolume;
+	for(i = 0; i < dimensions; i++) {
+		uid += (coordinate[i] + shell) << 1;
 
-				uid += (subShellVolume - subShellInnerVolume) * (coordinate[i] + shell - 1);
-			}
+		if(i == 0 && shell != 0) {
+			uid -= (coordinate[i] > coordinate[i + 1] || (coordinate[i] == shell && coordinate[i + 1] == shell));
 		}
 	}
 
