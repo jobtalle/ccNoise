@@ -9,49 +9,6 @@
 
 #define _CCN_CEIL_DIV_INT(n, div) ((n + div - 1) / div)
 
-static float _ccnInterpolateLinear(float a, float b, float x)
-{
-	return a * (1 - x) + b*x;
-}
-
-static float _ccnInterpolateCosine(float a, float b, float x)
-{
-	float factor = (1.0f - ccTriCosDeg((unsigned int)(x * 180.0f))) * .5f;
-
-	return a * (1.0f - factor) + b * factor;
-}
-
-static float _ccnInterpolateCubic(float a, float b, float c, float d, float x)
-{
-	float p = (d - c) - (a - b);
-
-	return ccTriCubed(x * p) + ccTriSquared(x * (a - b) - p) + x * (c - a) + b;
-}
-
-static unsigned int _ccnAbsMax(unsigned int elementCount, unsigned int *elements)
-{
-	unsigned int i;
-	unsigned int max = abs(elements[0]);
-
-	for(i = 1; i < elementCount; i++) {
-		if((unsigned int)abs(elements[i]) > max) {
-			max = abs(elements[i]);
-		}
-	}
-
-	return max;
-}
-
-static unsigned int _ccnIntPow(unsigned int base, unsigned int power)
-{
-	unsigned int i;
-	unsigned int result = 1;
-	
-	for(i = 0; i < power; i++) result *= base;
-
-	return result;
-}
-
 uint64_t ccnCoordinateUid(int x, int y)
 {
 	unsigned int shell = max(abs(x), abs(y));
