@@ -27,7 +27,6 @@ static void generatePerlinNoise()
 	float *noise = NULL;
 	unsigned int sizes[2] = {WIDTH, HEIGHT};
 
-	//noise = ccnGeneratePerlinNoise(ccrGenerateUint(&randomizer) ^ 42, WIDTH, HEIGHT, 5, 90, 0.5f);
 	ccnGenerateValueNoise(ccrGenerateUint(&randomizer) ^ 42, &noise, 2, sizes, 5, 90, 0.5f);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
@@ -41,31 +40,9 @@ static void generatePerlinNoise()
 	free(noise);
 }
 
-static void testGridNumberer(void)
-{
-#define GRIDRADIUS 4
-
-	struct coordinates{
-		int x, y, z;
-	};
-
-	struct coordinates c;
-
-	for(c.y = -GRIDRADIUS; c.y <= GRIDRADIUS; c.y++) {
-		printf("\n");
-		for(c.x = -GRIDRADIUS; c.x <= GRIDRADIUS; c.x++) {
-			printf("%d\t", ccnCoordinateUid(c.x, c.y));
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
-
 int main(int argc, char **argv)
 {
 	bool loop = true;
-	
-	testGridNumberer();
 
 	ccrSeed(&randomizer, (unsigned int)ccTimeNanoseconds());
 
