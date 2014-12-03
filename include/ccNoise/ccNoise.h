@@ -36,7 +36,7 @@ typedef enum {
 unsigned int ccnCoordinateUid(int x, int y);
 
 // Create worley noise
-void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points);
+void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points, unsigned int n, unsigned int low, unsigned int high);
 
 #ifdef __cplusplus
 }

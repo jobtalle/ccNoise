@@ -6,11 +6,12 @@
 #include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
 #include <ccTrigonometry/ccTrigonometry.h>
+#include <ccSort/ccSort.h>
 
 #define _CCN_CEIL_DIV_INT(n, div) ((n + div - 1) / div)
 
 typedef struct {
-	int x, y;
+	unsigned int x, y;
 } ccnPoint;
 
 unsigned int ccnCoordinateUid(int x, int y)
@@ -28,13 +29,17 @@ unsigned int ccnCoordinateUid(int x, int y)
 	return uid;
 }
 
-void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points)
+void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points, unsigned int n, unsigned int low, unsigned int high)
 {
 	unsigned int size = width * height;
 	unsigned int surface;
-	unsigned int i;
+	unsigned int i, j;
 	unsigned int pointId = 0;
-	ccnPoint *pointList = malloc((points << 2)*sizeof(ccnPoint));
+	unsigned int pointListSize = points << 2;
+
+	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
+	unsigned int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
+	unsigned int *pointsIndices = malloc(pointListSize*sizeof(unsigned int));
 
 	*buffer = malloc(sizeof(float)*size);
 
@@ -67,6 +72,25 @@ void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, uns
 	}
 
 	for(i = 0; i < size; i++) {
-		(*buffer)[i] = 0.5f;
+		ccnPoint p;
+		p.y = i / width;
+		p.x = i - p.y * width;
+
+		for(j = 0; j < pointListSize; j++) {
+			// TODO: add heuristics
+			pointsDistances[j] = (unsigned int)ccTriDistance(p.x, p.y, pointList[j].x, pointList[j].y);
+		}
+
+		ccsQuicksort(pointsDistances, 0, pointListSize);
+		
+		if(pointsDistances[n] < low) {
+			(*buffer)[i] = 1.0f;
+		}
+		else if(pointsDistances[n] > high) {
+			(*buffer)[i] = 0.0f;
+		}
+		else {
+			(*buffer)[i] = ccTriInterpolateLinear(0, 1, (float)(pointsDistances[n] - low) / (high - low));
+		}
 	}
 }
