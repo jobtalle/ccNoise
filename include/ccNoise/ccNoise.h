@@ -27,9 +27,17 @@ extern "C"
 {
 #endif
 
+// Interpolation methods for noise generation
+typedef enum {
+	CCN_INTERP_LINEAR,
+	CCN_INTERP_COSINE,
+	CCN_INTERP_CUBIC
+} ccnInterpolationMethod;
+
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
 
+// Create worley noise
 void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points);
 
 #ifdef __cplusplus
