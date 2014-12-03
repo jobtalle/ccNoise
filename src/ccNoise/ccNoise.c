@@ -9,6 +9,10 @@
 
 #define _CCN_CEIL_DIV_INT(n, div) ((n + div - 1) / div)
 
+typedef struct {
+	int x, y;
+} ccnPoint;
+
 unsigned int ccnCoordinateUid(int x, int y)
 {
 	unsigned int shell = max(abs(x), abs(y));
@@ -24,18 +28,45 @@ unsigned int ccnCoordinateUid(int x, int y)
 	return uid;
 }
 
-// TODO: octave -1 means iterate until smallest detail
-void ccnGenerateValueNoise(unsigned int seed, float **buffer, unsigned int dimensions, unsigned int *sizes, unsigned int octaves, unsigned int maxOctave, float octavePersistence)
+void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points)
 {
-	unsigned int bufferSize = 1;
-	unsigned int i, j;
-	unsigned int octaveSize = maxOctave;
-	float *tempBuffer;
-	float influence = 0.5f;
+	unsigned int size = width * height;
+	unsigned int surface;
+	unsigned int i;
+	unsigned int pointId = 0;
+	ccnPoint *pointList = malloc((points << 2)*sizeof(ccnPoint));
 
-	for(i = 0; i < dimensions; i++) {
-		bufferSize *= sizes[i];
+	*buffer = malloc(sizeof(float)*size);
+
+	for(surface = 0; surface < 4; surface++) {
+		ccRandomizer32 randomizer;
+		ccnPoint offset;
+
+		switch(surface) {
+		case 0:
+			offset = (ccnPoint){ 0, 0 };
+			break;
+		case 1:
+			offset = (ccnPoint){ 1, 0 };
+			break;
+		case 2:
+			offset = (ccnPoint){ 0, 1 };
+			break;
+		case 3:
+			offset = (ccnPoint){ 1, 1 };
+			break;
+		}
+
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + offset.x, y + offset.y));
+
+		for(i = 0; i < points; i++) {
+			pointList[pointId].x = (unsigned int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
+			pointList[pointId].y = (unsigned int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
+			pointId++;
+		}
 	}
 
-	*buffer = calloc(bufferSize, sizeof(float));
+	for(i = 0; i < size; i++) {
+		(*buffer)[i] = 0.5f;
+	}
 }

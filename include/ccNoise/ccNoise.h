@@ -30,9 +30,7 @@ extern "C"
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
 
-// Creates n-dimensional perlin noise
-// persistence 0 - 0.5
-void ccnGenerateValueNoise(unsigned int seed, float **buffer, unsigned int dimensions, unsigned int *sizes, unsigned int octaves, unsigned int maxOctave, float octavePersistence);
+void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points);
 
 #ifdef __cplusplus
 }

@@ -15,7 +15,7 @@
 
 GLuint texture;
 
-ccRandomizer randomizer;
+ccRandomizer32 randomizer;
 
 typedef struct {
 	unsigned char r, g, b, a;
@@ -25,9 +25,8 @@ static void generatePerlinNoise()
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
-	unsigned int sizes[2] = {WIDTH, HEIGHT};
 
-	ccnGenerateValueNoise(ccrGenerateUint(&randomizer) ^ 42, &noise, 2, sizes, 5, 90, 0.5f);
+	ccnGenerateWorleyNoise(&noise, ccrGenerateUint32(&randomizer), 0, 0, WIDTH, HEIGHT, 15);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
 {
 	bool loop = true;
 
-	ccrSeed(&randomizer, (unsigned int)ccTimeNanoseconds());
+	ccrSeed32(&randomizer, (unsigned int)ccTimeNanoseconds());
 
 	ccDisplayInitialize();
 
