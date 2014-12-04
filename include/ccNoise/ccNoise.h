@@ -32,11 +32,25 @@ typedef enum {
 	CCN_INTERP_CUBIC
 } ccnInterpolationMethod;
 
+typedef enum {
+	CCN_DIST_MANHATTAN,
+	CCN_DIST_EUCLIDEAN
+} ccnDistanceMethod;
+
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
 
 // Create worley noise
-void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points, unsigned int n, unsigned int low, unsigned int high);
+void ccnGenerateWorleyNoise(
+	float **buffer,
+	unsigned int seed,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	unsigned int points,
+	unsigned int n,
+	int low, int high,
+	float lowValue, float highValue,
+	ccnDistanceMethod distanceMethod);
 
 #ifdef __cplusplus
 }

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
@@ -29,44 +30,42 @@ unsigned int ccnCoordinateUid(int x, int y)
 	return uid;
 }
 
-void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, unsigned int width, unsigned int height, unsigned int points, unsigned int n, unsigned int low, unsigned int high)
+void ccnGenerateWorleyNoise(
+	float **buffer,
+	unsigned int seed,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	unsigned int points,
+	unsigned int n,
+	int low, int high,
+	float lowValue, float highValue,
+	ccnDistanceMethod distanceMethod)
 {
 	unsigned int size = width * height;
 	unsigned int surface;
 	unsigned int i, j;
 	unsigned int pointId = 0;
-	unsigned int pointListSize = points << 2;
+	unsigned int pointListSize = points;
 
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
-	unsigned int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
-	unsigned int *pointsIndices = malloc(pointListSize*sizeof(unsigned int));
+	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
+
+	unsigned int maxManhattanDistance = high * (2 / sqrt(2));
 
 	*buffer = malloc(sizeof(float)*size);
 
-	for(surface = 0; surface < 4; surface++) {
+	for(surface = 0; surface < 1; surface++) {
 		ccRandomizer32 randomizer;
 		ccnPoint offset;
 
-		switch(surface) {
-		case 0:
-			offset = (ccnPoint){ 0, 0 };
-			break;
-		case 1:
-			offset = (ccnPoint){ 1, 0 };
-			break;
-		case 2:
-			offset = (ccnPoint){ 0, 1 };
-			break;
-		case 3:
-			offset = (ccnPoint){ 1, 1 };
-			break;
-		}
+		offset.x = 0;
+		offset.y = 0;
 
 		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + offset.x, y + offset.y));
 
 		for(i = 0; i < points; i++) {
-			pointList[pointId].x = (unsigned int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
-			pointList[pointId].y = (unsigned int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
+			pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
+			pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
 			pointId++;
 		}
 	}
@@ -76,21 +75,40 @@ void ccnGenerateWorleyNoise(float **buffer, unsigned int seed, int x, int y, uns
 		p.y = i / width;
 		p.x = i - p.y * width;
 
+		pointId = 0;
 		for(j = 0; j < pointListSize; j++) {
-			// TODO: add heuristics
-			pointsDistances[j] = (unsigned int)ccTriDistance(p.x, p.y, pointList[j].x, pointList[j].y);
+			unsigned int manhattanDistance = abs(p.x - pointList[j].x) + abs(p.y - pointList[j].y);
+
+			if(manhattanDistance < maxManhattanDistance) {
+				switch(distanceMethod) {
+				case CCN_DIST_MANHATTAN:
+					pointsDistances[pointId] = manhattanDistance;
+					break;
+				case CCN_DIST_EUCLIDEAN:
+					pointsDistances[pointId] = (int)ccTriDistance(p.x, p.y, pointList[j].x, pointList[j].y);
+					break;
+				}
+
+				pointId++;
+			}
 		}
 
-		ccsQuicksort(pointsDistances, 0, pointListSize);
+		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
 		
-		if(pointsDistances[n] < low) {
-			(*buffer)[i] = 1.0f;
+		if(pointId <= n) {
+			(*buffer)[i] = highValue;
+		}
+		else if(pointsDistances[n] < low) {
+			(*buffer)[i] = lowValue;
 		}
 		else if(pointsDistances[n] > high) {
-			(*buffer)[i] = 0.0f;
+			(*buffer)[i] = highValue;
 		}
 		else {
-			(*buffer)[i] = ccTriInterpolateLinear(0, 1, (float)(pointsDistances[n] - low) / (high - low));
+			(*buffer)[i] = lowValue + ((float)(pointsDistances[n] - low) / (high - low)) * (highValue - lowValue);
 		}
 	}
+
+	free(pointList);
+	free(pointsDistances);
 }

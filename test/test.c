@@ -26,7 +26,7 @@ static void generatePerlinNoise()
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
 
-	ccnGenerateWorleyNoise(&noise, ccrGenerateUint32(&randomizer), 0, 0, WIDTH, HEIGHT, 15, 2, 10, 500);
+	ccnGenerateWorleyNoise(&noise, ccrGenerateUint32(&randomizer) ^ 42, 0, 0, WIDTH, HEIGHT, 24, 0, 0, 140, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
