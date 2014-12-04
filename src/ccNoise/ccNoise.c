@@ -12,7 +12,7 @@
 #define _CCN_CEIL_DIV_INT(n, div) ((n + div - 1) / div)
 
 typedef struct {
-	unsigned int x, y;
+	int x, y;
 } ccnPoint;
 
 unsigned int ccnCoordinateUid(int x, int y)
@@ -42,31 +42,29 @@ void ccnGenerateWorleyNoise(
 	ccnDistanceMethod distanceMethod)
 {
 	unsigned int size = width * height;
-	unsigned int surface;
 	unsigned int i, j;
 	unsigned int pointId = 0;
-	unsigned int pointListSize = points;
+	unsigned int pointListSize = points * 9;
+	ccnPoint offset;
 
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
-	unsigned int maxManhattanDistance = high * (2 / sqrt(2));
+	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
 
 	*buffer = malloc(sizeof(float)*size);
 
-	for(surface = 0; surface < 1; surface++) {
-		ccRandomizer32 randomizer;
-		ccnPoint offset;
+	for(offset.x = -1; offset.x <= 1; offset.x++) {
+		for(offset.y = -1; offset.y <= 1; offset.y++) {
+			ccRandomizer32 randomizer;
 
-		offset.x = 0;
-		offset.y = 0;
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + offset.x, y + offset.y));
 
-		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + offset.x, y + offset.y));
-
-		for(i = 0; i < points; i++) {
-			pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
-			pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
-			pointId++;
+			for(i = 0; i < points; i++) {
+				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
+				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
+				pointId++;
+			}
 		}
 	}
 
@@ -98,11 +96,11 @@ void ccnGenerateWorleyNoise(
 		if(pointId <= n) {
 			(*buffer)[i] = highValue;
 		}
-		else if(pointsDistances[n] < low) {
-			(*buffer)[i] = lowValue;
-		}
 		else if(pointsDistances[n] > high) {
 			(*buffer)[i] = highValue;
+		}
+		else if(pointsDistances[n] < low) {
+			(*buffer)[i] = lowValue;
 		}
 		else {
 			(*buffer)[i] = lowValue + ((float)(pointsDistances[n] - low) / (high - low)) * (highValue - lowValue);
