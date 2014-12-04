@@ -39,7 +39,8 @@ void ccnGenerateWorleyNoise(
 	unsigned int n,
 	int low, int high,
 	float lowValue, float highValue,
-	ccnDistanceMethod distanceMethod)
+	ccnDistanceMethod distanceMethod,
+	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = width * height;
 	unsigned int i, j;
@@ -103,7 +104,17 @@ void ccnGenerateWorleyNoise(
 			(*buffer)[i] = lowValue;
 		}
 		else {
-			(*buffer)[i] = lowValue + ((float)(pointsDistances[n] - low) / (high - low)) * (highValue - lowValue);
+			switch(interpolationMethod) {
+			case CCN_INTERP_LINEAR:
+				(*buffer)[i] = ccTriInterpolateLinear(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				break;
+			case CCN_INTERP_QUADRATIC:
+				(*buffer)[i] = ccTriInterpolateQuadratic(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				break;
+			case CCN_INTERP_QUADRATIC_INVERSE:
+				(*buffer)[i] = ccTriInterpolateQuadraticInverse(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				break;
+			}
 		}
 	}
 

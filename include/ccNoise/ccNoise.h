@@ -25,11 +25,10 @@ extern "C"
 {
 #endif
 
-// Interpolation methods for noise generation
 typedef enum {
 	CCN_INTERP_LINEAR,
-	CCN_INTERP_COSINE,
-	CCN_INTERP_CUBIC
+	CCN_INTERP_QUADRATIC,
+	CCN_INTERP_QUADRATIC_INVERSE
 } ccnInterpolationMethod;
 
 typedef enum {
@@ -50,7 +49,8 @@ void ccnGenerateWorleyNoise(
 	unsigned int n,
 	int low, int high,
 	float lowValue, float highValue,
-	ccnDistanceMethod distanceMethod);
+	ccnDistanceMethod distanceMethod,
+	ccnInterpolationMethod interpolationMethod);
 
 #ifdef __cplusplus
 }

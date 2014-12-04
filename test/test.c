@@ -27,7 +27,7 @@ static void generate(int left)
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
 
-	ccnGenerateWorleyNoise(&noise, seed, left?0:1, 0, WIDTH, HEIGHT, 33, 1, 0, 100, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN);
+	ccnGenerateWorleyNoise(&noise, seed, left?0:1, 0, WIDTH, HEIGHT, 88, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_LINEAR);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
@@ -62,6 +62,7 @@ int main(int argc, char **argv)
 
 	ccWindowCreate((ccRect){ 0, 0, WIDTH << 1, HEIGHT }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
 	ccWindowSetCentered();
+	//ccWindowSetFullscreen(CC_FULLSCREEN_CURRENT_DISPLAY);
 
 	ccGLContextBind();
 
@@ -101,6 +102,9 @@ int main(int argc, char **argv)
 					printf("Rendering worley noise...\n");
 					generateRight();
 					printf("done.\n");
+					break;
+				case CC_KEY_ESCAPE:
+					loop = false;
 					break;
 				}
 			}
