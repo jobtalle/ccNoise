@@ -53,6 +53,8 @@ void ccnGenerateWorleyNoise(
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
 
+	float(*interpolate)(float, float, float) = NULL;
+
 	*buffer = malloc(sizeof(float)*size);
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
@@ -86,6 +88,9 @@ void ccnGenerateWorleyNoise(
 				case CCN_DIST_EUCLIDEAN:
 					pointsDistances[pointId] = (int)ccTriDistance(p.x, p.y, pointList[j].x, pointList[j].y);
 					break;
+				case CCN_DIST_CHEBYCHEV:
+					pointsDistances[pointId] = max(abs(pointList[j].x - p.x), abs(pointList[j].y - p.y));
+					break;
 				}
 
 				pointId++;
@@ -106,15 +111,20 @@ void ccnGenerateWorleyNoise(
 		else {
 			switch(interpolationMethod) {
 			case CCN_INTERP_LINEAR:
-				(*buffer)[i] = ccTriInterpolateLinear(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				interpolate = &ccTriInterpolateLinear;
 				break;
 			case CCN_INTERP_QUADRATIC:
-				(*buffer)[i] = ccTriInterpolateQuadratic(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				interpolate = &ccTriInterpolateQuadratic;
 				break;
 			case CCN_INTERP_QUADRATIC_INVERSE:
-				(*buffer)[i] = ccTriInterpolateQuadraticInverse(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+				interpolate = &ccTriInterpolateQuadraticInverse;
+				break;
+			case CCN_INTERP_COSINE:
+				interpolate = &ccTriInterpolateCosine;
 				break;
 			}
+
+			(*buffer)[i] = interpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
 		}
 	}
 

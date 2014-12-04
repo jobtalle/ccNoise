@@ -28,12 +28,14 @@ extern "C"
 typedef enum {
 	CCN_INTERP_LINEAR,
 	CCN_INTERP_QUADRATIC,
-	CCN_INTERP_QUADRATIC_INVERSE
+	CCN_INTERP_QUADRATIC_INVERSE,
+	CCN_INTERP_COSINE
 } ccnInterpolationMethod;
 
 typedef enum {
 	CCN_DIST_MANHATTAN,
-	CCN_DIST_EUCLIDEAN
+	CCN_DIST_EUCLIDEAN,
+	CCN_DIST_CHEBYCHEV
 } ccnDistanceMethod;
 
 // Create an unique as possible ID for a coordinate
