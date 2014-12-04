@@ -22,42 +22,33 @@ typedef struct {
 	unsigned char r, g, b, a;
 } pixelRGBA;
 
-static void generateLeft()
+static void generate(int left)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
 
-	ccnGenerateWorleyNoise(&noise, seed, 0, 0, WIDTH, HEIGHT, 24, 1, 0, 140, 0.1f, 1.0f, CCN_DIST_MANHATTAN);
+	ccnGenerateWorleyNoise(&noise, seed, left?0:1, 0, WIDTH, HEIGHT, 33, 1, 0, 100, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
 		pixels[i].a = 255;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, textureLeft);
+	glBindTexture(GL_TEXTURE_2D, left?textureLeft:textureRight);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	free(pixels);
 	free(noise);
 }
 
+static void generateLeft()
+{
+	generate(1);
+}
+
 static void generateRight()
 {
-	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
-	float *noise = NULL;
-
-	ccnGenerateWorleyNoise(&noise, seed, 1, 0, WIDTH, HEIGHT, 24, 1, 0, 140, 0.1f, 1.0f, CCN_DIST_MANHATTAN);
-
-	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
-		pixels[i].a = 255;
-	}
-
-	glBindTexture(GL_TEXTURE_2D, textureRight);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-	free(pixels);
-	free(noise);
+	generate(0);
 }
 
 int main(int argc, char **argv)
@@ -65,6 +56,7 @@ int main(int argc, char **argv)
 	bool loop = true;
 
 	ccrSeed32(&randomizer, (unsigned int)ccTimeNanoseconds());
+	seed = ccrGenerateUint32(&randomizer);
 
 	ccDisplayInitialize();
 
