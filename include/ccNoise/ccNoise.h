@@ -43,16 +43,16 @@ unsigned int ccnCoordinateUid(int x, int y);
 
 // Create worley noise
 void ccnGenerateWorleyNoise(
-	float **buffer,
-	unsigned int seed,
-	int x, int y,
-	unsigned int width, unsigned int height,
-	unsigned int points,
-	unsigned int n,
-	int low, int high,
-	float lowValue, float highValue,
-	ccnDistanceMethod distanceMethod,
-	ccnInterpolationMethod interpolationMethod);
+	float **buffer,                              // The buffer to store the generated values in
+	unsigned int seed,                           // The random seed
+	int x, int y,                                // Adjecent coordinates will tile seamlessly
+	unsigned int width, unsigned int height,     // Noise dimensions
+	unsigned int points,                         // The number of points per noise
+	unsigned int n,                              // Worley noise interpolates to the n-th closest point
+	int low, int high,                           // Interpolation occurs between the lowest and highest distance
+	float lowValue, float highValue,             // Minimum and maximum value of the noise
+	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
+	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 #ifdef __cplusplus
 }
