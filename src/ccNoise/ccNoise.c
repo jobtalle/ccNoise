@@ -15,6 +15,25 @@ typedef struct {
 	int x, y;
 } ccnPoint;
 
+typedef float(*ccnInterpolationFunction)(float, float, float);
+
+static void ccnGetInterpolationFunction(ccnInterpolationMethod method, ccnInterpolationFunction *interpolationFunction) {
+	switch(method) {
+	case CCN_INTERP_LINEAR:
+		*interpolationFunction = &ccTriInterpolateLinear;
+		break;
+	case CCN_INTERP_QUADRATIC:
+		*interpolationFunction = &ccTriInterpolateQuadratic;
+		break;
+	case CCN_INTERP_QUADRATIC_INVERSE:
+		*interpolationFunction = &ccTriInterpolateQuadraticInverse;
+		break;
+	case CCN_INTERP_COSINE:
+		*interpolationFunction = &ccTriInterpolateCosine;
+		break;
+	}
+}
+
 unsigned int ccnCoordinateUid(int x, int y)
 {
 	unsigned int shell = max(abs(x), abs(y));
@@ -53,7 +72,7 @@ void ccnGenerateWorleyNoise(
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
 
-	float(*interpolate)(float, float, float) = NULL;
+	ccnInterpolationFunction interpolationFunction;
 
 	*buffer = malloc(sizeof(float)*size);
 
@@ -109,22 +128,8 @@ void ccnGenerateWorleyNoise(
 			(*buffer)[i] = lowValue;
 		}
 		else {
-			switch(interpolationMethod) {
-			case CCN_INTERP_LINEAR:
-				interpolate = &ccTriInterpolateLinear;
-				break;
-			case CCN_INTERP_QUADRATIC:
-				interpolate = &ccTriInterpolateQuadratic;
-				break;
-			case CCN_INTERP_QUADRATIC_INVERSE:
-				interpolate = &ccTriInterpolateQuadraticInverse;
-				break;
-			case CCN_INTERP_COSINE:
-				interpolate = &ccTriInterpolateCosine;
-				break;
-			}
-
-			(*buffer)[i] = interpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+			ccnGetInterpolationFunction(interpolationMethod, &interpolationFunction);
+			(*buffer)[i] = interpolationFunction(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
 		}
 	}
 

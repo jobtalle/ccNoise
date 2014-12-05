@@ -54,6 +54,16 @@ void ccnGenerateWorleyNoise(
 	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
+// Create value noise
+void ccnGenerateFractalNoise(
+	float **buffer,                              // The buffer to store the generated values in
+	unsigned int seed,                           // The random seed
+	int x, int y,                                // Adjecent coordinates will tile seamlessly
+	unsigned int width, unsigned int height,     // Noise dimensions
+	unsigned int octaves,                        // The number of times to add noises to the noise
+	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
+	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+
 #ifdef __cplusplus
 }
 #endif
