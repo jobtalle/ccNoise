@@ -185,6 +185,11 @@ void ccnGenerateFractalNoise(
 			if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
 		}
 
+		// Generate last corner value
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y + 1) + i);
+
+		randomValues[randomValueCount - 1] = ccrGenerateFloat32(&randomizer);
+
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;
 			unsigned int X = j - Y * width;
