@@ -15,22 +15,16 @@ typedef struct {
 	int x, y;
 } ccnPoint;
 
-typedef float(*ccnInterpolationFunction)(float, float, float);
-
-static void ccnGetInterpolationFunction(ccnInterpolationMethod method, ccnInterpolationFunction *interpolationFunction) {
-	switch(method) {
+static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod) {
+	switch(interpolationMethod) {
 	case CCN_INTERP_LINEAR:
-		*interpolationFunction = &ccTriInterpolateLinear;
-		break;
+		return ccTriInterpolateLinear(a, b, x);
 	case CCN_INTERP_QUADRATIC:
-		*interpolationFunction = &ccTriInterpolateQuadratic;
-		break;
+		return ccTriInterpolateQuadratic(a, b, x);
 	case CCN_INTERP_QUADRATIC_INVERSE:
-		*interpolationFunction = &ccTriInterpolateQuadraticInverse;
-		break;
+		return ccTriInterpolateQuadraticInverse(a, b, x);
 	case CCN_INTERP_COSINE:
-		*interpolationFunction = &ccTriInterpolateCosine;
-		break;
+		return ccTriInterpolateCosine(a, b, x);
 	}
 }
 
@@ -71,8 +65,6 @@ void ccnGenerateWorleyNoise(
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
-
-	ccnInterpolationFunction interpolationFunction;
 
 	*buffer = malloc(sizeof(float)*size);
 
@@ -128,11 +120,74 @@ void ccnGenerateWorleyNoise(
 			(*buffer)[i] = lowValue;
 		}
 		else {
-			ccnGetInterpolationFunction(interpolationMethod, &interpolationFunction);
-			(*buffer)[i] = interpolationFunction(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low));
+			(*buffer)[i] = ccnInterpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod);
 		}
 	}
 
 	free(pointList);
 	free(pointsDistances);
+}
+
+void ccnGenerateFractalNoise(
+	float **buffer,
+	unsigned int seed,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	unsigned int octaves,
+	unsigned int maxOctave,
+	float persistence,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int size = width * height;
+	unsigned int octaveSize = maxOctave;
+	unsigned int i, j, k;
+
+	float influence = 0.5f;
+
+	ccRandomizer32 randomizer;
+
+	octaveSize = maxOctave;
+
+	*buffer = calloc(size, sizeof(float));
+
+	for(i = 0; i < octaves; i++) {
+		unsigned int xSteps = width / octaveSize;
+		unsigned int ySteps = height / octaveSize;
+		unsigned int randomValueCount = (xSteps + 1) * (ySteps + 1);
+		float *randomValues = malloc(randomValueCount * sizeof(float));
+
+		ccnPoint offset;
+		offset.x = x;
+		offset.y = y;
+
+		for(j = 0; j <= ySteps; j++) {
+			if(j == ySteps) offset.y = 1;
+			ccrSeed32(&randomizer, seed + j + ccnCoordinateUid(offset.x, offset.y) * octaveSize);
+			for(k = 0; k <= xSteps; k++) {
+				if(k == xSteps) ccrSeed32(&randomizer, seed + j + ccnCoordinateUid(offset.x + 1, offset.y) * octaveSize);
+				randomValues[(xSteps + 1) * j + k] = ccrGenerateFloat32(&randomizer);
+			}
+		}
+
+		for(j = 0; j < size; j++) {
+			unsigned int Y = j / width;
+			unsigned int X = j - Y * width;
+
+			unsigned int Yoct = Y / octaveSize;
+			unsigned int Xoct = (X / octaveSize) + (xSteps + 1) * Yoct;
+
+			float xFactor = (float)(X - octaveSize * (X / octaveSize)) / octaveSize;
+			float yFactor = (float)(Y - octaveSize * Yoct) / octaveSize;
+			
+			(*buffer)[j] += ccnInterpolate(
+				ccnInterpolate(randomValues[Xoct], randomValues[Xoct + 1], xFactor, interpolationMethod),
+				ccnInterpolate(randomValues[Xoct + xSteps + 1], randomValues[Xoct + xSteps + 2], xFactor, interpolationMethod),
+				yFactor, interpolationMethod) * influence;
+		}
+
+		influence *= persistence;
+
+		octaveSize >>= 1;
+		if(octaveSize == 0) break;
+	}
 }

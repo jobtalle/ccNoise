@@ -60,8 +60,9 @@ void ccnGenerateFractalNoise(
 	unsigned int seed,                           // The random seed
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
-	unsigned int octaves,                        // The number of times to add noises to the noise
+	unsigned int octaves,                        // The number of times to add noises to the noise, 2 log maxOctaves for maximum detail
 	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
+	float persistence,                           // The factor below to multiply each subsequent octave's influence with
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 #ifdef __cplusplus
