@@ -145,7 +145,7 @@ void ccnGenerateFractalNoise(
 	unsigned int octaveSize = maxOctave;
 	unsigned int i, j, k;
 
-	float influence = 0.5f;
+	float influence = 0.5f; // TODO: pick number to make range [0, 1]
 
 	ccRandomizer32 randomizer;
 
@@ -205,7 +205,14 @@ void ccnGenerateFractalNoise(
 			for(k = 0; k <= width; k++) {
 				unsigned octX = k / octaveSize;
 
-				xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[octX + j * (xSteps + 1)], randomValues[octX + j * (xSteps + 1) + 1], (float)(k - octX * octaveSize) / octaveSize, interpolationMethod);
+				float factor = (float)(k - octX * octaveSize) / octaveSize;
+
+				if(factor == 0) {
+					xValues[k + j * (width + 1)] = randomValues[octX + j * (xSteps + 1)];
+				}
+				else {
+					xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[octX + j * (xSteps + 1)], randomValues[octX + j * (xSteps + 1) + 1], factor, interpolationMethod);
+				}
 			}
 		}
 
@@ -215,7 +222,14 @@ void ccnGenerateFractalNoise(
 
 			unsigned octY = Y / octaveSize;
 
-			(*buffer)[j] += ccnInterpolate(xValues[X + octY * (width + 1)], xValues[X + (octY + 1) * (width + 1)], (float)(Y - octY * octaveSize) / octaveSize, interpolationMethod) * influence;
+			float factor = (float)(Y - octY * octaveSize) / octaveSize;
+
+			if(factor == 0) {
+				(*buffer)[j] += xValues[X + octY * (width + 1)] * influence;
+			}
+			else {
+				(*buffer)[j] += ccnInterpolate(xValues[X + octY * (width + 1)], xValues[X + (octY + 1) * (width + 1)], factor, interpolationMethod) * influence;
+			}
 		}
 		
 		free(xValues);
