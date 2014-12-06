@@ -15,7 +15,8 @@ typedef struct {
 	int x, y;
 } ccnPoint;
 
-static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod) {
+static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
+{
 	switch(interpolationMethod) {
 	case CCN_INTERP_LINEAR:
 		return ccTriInterpolateLinear(a, b, x);
@@ -25,6 +26,20 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 		return ccTriInterpolateQuadraticInverse(a, b, x);
 	case CCN_INTERP_COSINE:
 		return ccTriInterpolateCosine(a, b, x);
+	default:
+		return 0;
+	}
+}
+
+static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
+{
+	switch(distanceMethod) {
+	case CCN_DIST_MANHATTAN:
+		return abs(a.x - b.x) + abs(a.y - b.y);
+	case CCN_DIST_EUCLIDEAN:
+		return (unsigned int)ccTriDistance(a.x, a.y, b.x, b.y);
+	case CCN_DIST_CHEBYCHEV:
+		return max(abs(a.x - b.x), abs(a.y - b.y));
 	default:
 		return 0;
 	}
@@ -91,19 +106,14 @@ void ccnGenerateWorleyNoise(
 
 		pointId = 0;
 		for(j = 0; j < pointListSize; j++) {
-			unsigned int manhattanDistance = abs(p.x - pointList[j].x) + abs(p.y - pointList[j].y);
+			unsigned int manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
 
 			if(manhattanDistance < maxManhattanDistance) {
-				switch(distanceMethod) {
-				case CCN_DIST_MANHATTAN:
+				if(distanceMethod == CCN_DIST_MANHATTAN) {
 					pointsDistances[pointId] = manhattanDistance;
-					break;
-				case CCN_DIST_EUCLIDEAN:
-					pointsDistances[pointId] = (int)ccTriDistance(p.x, p.y, pointList[j].x, pointList[j].y);
-					break;
-				case CCN_DIST_CHEBYCHEV:
-					pointsDistances[pointId] = max(abs(pointList[j].x - p.x), abs(pointList[j].y - p.y));
-					break;
+				}
+				else {
+					pointsDistances[pointId] = ccnDistance(p, pointList[j], distanceMethod);
 				}
 
 				pointId++;
