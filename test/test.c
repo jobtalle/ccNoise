@@ -10,10 +10,10 @@
 
 #include <gl/GL.h>
 
-#define WIDTH  512
-#define HEIGHT 512
+#define WIDTH  256
+#define HEIGHT 256
 
-GLuint textureLeft, textureRight;
+GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
 ccRandomizer32 randomizer;
 unsigned int seed;
@@ -22,34 +22,44 @@ typedef struct {
 	unsigned char r, g, b, a;
 } pixelRGBA;
 
-static void generate(int left)
+static void generate(int left, int top)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
 
-	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, 0, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateFractalNoise(&noise, seed, left?0:1, 0, WIDTH, HEIGHT, 1, 64, 0.5f, CCN_INTERP_COSINE);
+	ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	//ccnGenerateFractalNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 1, 16, 0.5f, CCN_INTERP_COSINE);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
 		pixels[i].a = 255;
 	}
 
-	glBindTexture(GL_TEXTURE_2D, left?textureLeft:textureRight);
+	glBindTexture(GL_TEXTURE_2D, left?top?textureLeftTop:textureLeftBottom:top?textureRightTop:textureRightBottom);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	free(pixels);
 	free(noise);
 }
 
-static void generateLeft()
+static void generateLeftTop()
 {
-	generate(1);
+	generate(1, 1);
 }
 
-static void generateRight()
+static void generateRightTop()
 {
-	generate(0);
+	generate(0, 1);
+}
+
+static void generateLeftBottom()
+{
+	generate(1, 0);
+}
+
+static void generateRightBottom()
+{
+	generate(0, 0);
 }
 
 int main(int argc, char **argv)
@@ -61,7 +71,7 @@ int main(int argc, char **argv)
 
 	ccDisplayInitialize();
 
-	ccWindowCreate((ccRect){ 0, 0, WIDTH << 1, HEIGHT }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
+	ccWindowCreate((ccRect){ 0, 0, WIDTH << 1, HEIGHT << 1 }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
 	ccWindowSetCentered();
 	//ccWindowSetFullscreen(CC_FULLSCREEN_CURRENT_DISPLAY);
 
@@ -71,15 +81,27 @@ int main(int argc, char **argv)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 
-	glGenTextures(1, &textureLeft);
-	glGenTextures(1, &textureRight);
+	glGenTextures(1, &textureLeftTop);
+	glGenTextures(1, &textureRightTop);
+	glGenTextures(1, &textureLeftBottom);
+	glGenTextures(1, &textureRightBottom);
 
-	glBindTexture(GL_TEXTURE_2D, textureLeft);
+	glBindTexture(GL_TEXTURE_2D, textureLeftTop);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glBindTexture(GL_TEXTURE_2D, textureRight);
+	glBindTexture(GL_TEXTURE_2D, textureRightTop);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, textureLeftBottom);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glBindTexture(GL_TEXTURE_2D, textureRightBottom);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -96,12 +118,22 @@ int main(int argc, char **argv)
 					break;
 				case CC_KEY_1:
 					printf("Rendering worley noise...\n");
-					generateLeft();
+					generateLeftTop();
 					printf("done.\n");
 					break;
 				case CC_KEY_2:
 					printf("Rendering worley noise...\n");
-					generateRight();
+					generateRightTop();
+					printf("done.\n");
+					break;
+				case CC_KEY_3:
+					printf("Rendering worley noise...\n");
+					generateLeftBottom();
+					printf("done.\n");
+					break;
+				case CC_KEY_4:
+					printf("Rendering worley noise...\n");
+					generateRightBottom();
 					printf("done.\n");
 					break;
 				case CC_KEY_ESCAPE:
@@ -113,20 +145,36 @@ int main(int argc, char **argv)
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glBindTexture(GL_TEXTURE_2D, textureLeft);
+		glBindTexture(GL_TEXTURE_2D, textureLeftTop);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);	glVertex2f(-1.0f, 1.0f);
-		glTexCoord2f(0.0f, 1.0f);	glVertex2f(-1.0f, -1.0f);
-		glTexCoord2f(1.0f, 1.0f);	glVertex2f(0.0f, -1.0f);
+		glTexCoord2f(0.0f, 1.0f);	glVertex2f(-1.0f, 0.0f);
+		glTexCoord2f(1.0f, 1.0f);	glVertex2f(0.0f, 0.0f);
 		glTexCoord2f(1.0f, 0.0f);	glVertex2f(0.0f, 1.0f);
 		glEnd();
 
-		glBindTexture(GL_TEXTURE_2D, textureRight);
+		glBindTexture(GL_TEXTURE_2D, textureRightTop);
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);	glVertex2f(0.0f, 1.0f);
+		glTexCoord2f(0.0f, 1.0f);	glVertex2f(0.0f, 0.0f);
+		glTexCoord2f(1.0f, 1.0f);	glVertex2f(1.0f, 0.0f);
+		glTexCoord2f(1.0f, 0.0f);	glVertex2f(1.0f, 1.0f);
+		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, textureLeftBottom);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 0.0f);	glVertex2f(-1.0f, 0.0f);
+		glTexCoord2f(0.0f, 1.0f);	glVertex2f(-1.0f, -1.0f);
+		glTexCoord2f(1.0f, 1.0f);	glVertex2f(0.0f, -1.0f);
+		glTexCoord2f(1.0f, 0.0f);	glVertex2f(0.0f, 0.0f);
+		glEnd();
+
+		glBindTexture(GL_TEXTURE_2D, textureRightBottom);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0.0f, 0.0f);	glVertex2f(0.0f, 0.0f);
 		glTexCoord2f(0.0f, 1.0f);	glVertex2f(0.0f, -1.0f);
 		glTexCoord2f(1.0f, 1.0f);	glVertex2f(1.0f, -1.0f);
-		glTexCoord2f(1.0f, 0.0f);	glVertex2f(1.0f, 1.0f);
+		glTexCoord2f(1.0f, 0.0f);	glVertex2f(1.0f, 0.0f);
 		glEnd();
 
 		ccGLBuffersSwap();

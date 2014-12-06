@@ -25,6 +25,8 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 		return ccTriInterpolateQuadraticInverse(a, b, x);
 	case CCN_INTERP_COSINE:
 		return ccTriInterpolateCosine(a, b, x);
+	default:
+		return 0;
 	}
 }
 
@@ -154,19 +156,33 @@ void ccnGenerateFractalNoise(
 		unsigned int xSteps = width / octaveSize;
 		unsigned int ySteps = height / octaveSize;
 		unsigned int randomValueCount = (xSteps + 1) * (ySteps + 1);
+		unsigned int offset;
 		float *randomValues = malloc(randomValueCount * sizeof(float));
 
-		ccnPoint offset;
-		offset.x = x;
-		offset.y = y;
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y) + i);
 
-		for(j = 0; j <= ySteps; j++) {
-			if(j == ySteps) offset.y = 1;
-			ccrSeed32(&randomizer, seed + j + ccnCoordinateUid(offset.x, offset.y) * octaveSize);
-			for(k = 0; k <= xSteps; k++) {
-				if(k == xSteps) ccrSeed32(&randomizer, seed + j + ccnCoordinateUid(offset.x + 1, offset.y) * octaveSize);
-				randomValues[(xSteps + 1) * j + k] = ccrGenerateFloat32(&randomizer);
-			}
+		// Generate block values
+		for(j = 0; j < randomValueCount; j++) {
+			randomValues[j] = ccrGenerateFloat32(&randomizer);
+		}
+
+		// Generate bottom
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y + 1) + i);
+
+		offset = (xSteps + 1) * ySteps;
+
+		for(j = 0; j < xSteps; j++) {
+			randomValues[offset + j] = ccrGenerateFloat32(&randomizer);
+		}
+
+		// Generate right bound
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y) + i);
+
+		for(j = 0; j < randomValueCount; j++) {
+			unsigned int _y = j / (xSteps + 1);
+			float value = ccrGenerateFloat32(&randomizer);
+
+			if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
 		}
 
 		for(j = 0; j < size; j++) {
@@ -184,6 +200,8 @@ void ccnGenerateFractalNoise(
 				ccnInterpolate(randomValues[Xoct + xSteps + 1], randomValues[Xoct + xSteps + 2], xFactor, interpolationMethod),
 				yFactor, interpolationMethod) * influence;
 		}
+
+		free(randomValues);
 
 		influence *= persistence;
 
