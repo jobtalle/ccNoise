@@ -27,11 +27,18 @@ extern "C"
 {
 #endif
 
+#define CCN_INFINITE UINT32_MAX
+
+#define CCN_ERROR_NONE                   0x00
+#define CCN_ERROR_INVALID_METHOD         0x01
+#define CCN_ERROR_INVALID_ARGUMENT_RANGE 0x02
+
 typedef enum {
 	CCN_INTERP_LINEAR,
 	CCN_INTERP_QUADRATIC,
 	CCN_INTERP_QUADRATIC_INVERSE,
-	CCN_INTERP_COSINE
+	CCN_INTERP_COSINE,
+	CCN_INTERP_CUBIC
 } ccnInterpolationMethod;
 
 typedef enum {
@@ -44,7 +51,7 @@ typedef enum {
 unsigned int ccnCoordinateUid(int x, int y);
 
 // Create worley noise
-void ccnGenerateWorleyNoise(
+int ccnGenerateWorleyNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
@@ -57,15 +64,14 @@ void ccnGenerateWorleyNoise(
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create value noise
-void ccnGenerateFractalNoise(
+int ccnGenerateFractalNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
 	bool makeTileable,                           // Make noise tileable, costs some overhead
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
-	unsigned int octaves,                        // The number of times to add noises to the noise, 2 log maxOctaves for maximum detail
+	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
 	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
-	float persistence,                           // The factor below to multiply each subsequent octave's influence with
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 #ifdef __cplusplus

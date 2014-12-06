@@ -60,7 +60,7 @@ unsigned int ccnCoordinateUid(int x, int y)
 	return uid;
 }
 
-void ccnGenerateWorleyNoise(
+int ccnGenerateWorleyNoise(
 	float **buffer,
 	unsigned int seed,
 	int x, int y,
@@ -82,6 +82,8 @@ void ccnGenerateWorleyNoise(
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
+
+	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 
 	*buffer = malloc(sizeof(float)*size);
 
@@ -138,9 +140,11 @@ void ccnGenerateWorleyNoise(
 
 	free(pointList);
 	free(pointsDistances);
+
+	return CCN_ERROR_NONE;
 }
 
-void ccnGenerateFractalNoise(
+int ccnGenerateFractalNoise(
 	float **buffer,
 	unsigned int seed,
 	bool makeTileable,
@@ -148,13 +152,12 @@ void ccnGenerateFractalNoise(
 	unsigned int width, unsigned int height,
 	unsigned int octaves,
 	unsigned int maxOctave,
-	float persistence,
 	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = width * height;
 	unsigned int octaveSize = maxOctave;
 	unsigned int i, j, k;
-
+	
 	float influence = 0.5f; // TODO: pick number to make range [0, 1]
 
 	ccRandomizer32 randomizer;
@@ -245,9 +248,18 @@ void ccnGenerateFractalNoise(
 		free(xValues);
 		free(randomValues);
 
-		influence *= persistence;
+		influence *= 0.5f;
 
 		octaveSize >>= 1;
-		if(octaveSize == 0) break;
+		if(octaveSize == 0) {
+			if(octaves == CCN_INFINITE) {
+				break;
+			}
+			else {
+				return CCN_ERROR_INVALID_ARGUMENT_RANGE;
+			}
+		}
 	}
+
+	return CCN_ERROR_NONE;
 }

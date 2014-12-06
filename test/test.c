@@ -27,8 +27,8 @@ static void generate(int left, int top)
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
 
-	ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	//ccnGenerateFractalNoise(&noise, seed, true, left?0:1, top?0:1, WIDTH, HEIGHT, 5, 64, 0.5f, CCN_INTERP_COSINE);
+	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 1, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	ccnGenerateFractalNoise(&noise, seed, true, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_INFINITE, 64, CCN_INTERP_COSINE);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
