@@ -203,7 +203,9 @@ void ccnGenerateFractalNoise(
 
 		for(j = 0; j <= ySteps ; j++) {
 			for(k = 0; k <= width; k++) {
-				xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[(k / octaveSize) + j * (xSteps + 1)], randomValues[(k / octaveSize) + j * (xSteps + 1) + 1], (float)(k - (k / octaveSize) * octaveSize) / octaveSize, interpolationMethod);
+				unsigned octX = k / octaveSize;
+
+				xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[octX + j * (xSteps + 1)], randomValues[octX + j * (xSteps + 1) + 1], (float)(k - octX * octaveSize) / octaveSize, interpolationMethod);
 			}
 		}
 
@@ -211,7 +213,9 @@ void ccnGenerateFractalNoise(
 			unsigned int Y = j / width;
 			unsigned int X = j - Y * width;
 
-			(*buffer)[j] += ccnInterpolate(xValues[X + (Y / octaveSize) * (width + 1)], xValues[X + (Y / octaveSize) * (width + 1) + width + 1], (float)(Y - (Y / octaveSize) * octaveSize) / octaveSize, interpolationMethod) * influence;
+			unsigned octY = Y / octaveSize;
+
+			(*buffer)[j] += ccnInterpolate(xValues[X + octY * (width + 1)], xValues[X + (octY + 1) * (width + 1)], (float)(Y - octY * octaveSize) / octaveSize, interpolationMethod) * influence;
 		}
 		
 		free(xValues);
