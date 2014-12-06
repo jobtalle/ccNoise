@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+#include <ccore/types.h>
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -58,6 +60,7 @@ void ccnGenerateWorleyNoise(
 void ccnGenerateFractalNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
+	bool makeTileable,                           // Make noise tileable, costs some overhead
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
 	unsigned int octaves,                        // The number of times to add noises to the noise, 2 log maxOctaves for maximum detail

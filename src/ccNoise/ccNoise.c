@@ -133,6 +133,7 @@ void ccnGenerateWorleyNoise(
 void ccnGenerateFractalNoise(
 	float **buffer,
 	unsigned int seed,
+	bool makeTileable,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	unsigned int octaves,
@@ -158,54 +159,62 @@ void ccnGenerateFractalNoise(
 		unsigned int randomValueCount = (xSteps + 1) * (ySteps + 1);
 		unsigned int offset;
 		float *randomValues = malloc(randomValueCount * sizeof(float));
+		float *xValues = malloc((width + 1) * (ySteps + 1) * sizeof(float));
 
 		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y) + i);
 
-		// Generate block values
-		for(j = 0; j < randomValueCount; j++) {
-			randomValues[j] = ccrGenerateFloat32(&randomizer);
+		if(makeTileable) {
+			unsigned int randomValuesMinusBottom = randomValueCount - xSteps - 1;
+
+			// Generate own
+			for(j = 0; j < randomValuesMinusBottom; j++) {
+				randomValues[j] = ccrGenerateFloat32(&randomizer);
+			}
+
+			// Generate bottom
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y + 1) + i);
+
+			offset = (xSteps + 1) * ySteps;
+
+			for(j = 0; j < xSteps; j++) {
+				randomValues[offset + j] = ccrGenerateFloat32(&randomizer);
+			}
+
+			// Generate right
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y) + i);
+
+			for(j = 0; j < randomValueCount; j++) {
+				unsigned int _y = j / (xSteps + 1);
+				float value = ccrGenerateFloat32(&randomizer);
+
+				if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
+			}
+
+			// Generate right bottom
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y + 1) + i);
+
+			randomValues[randomValueCount - 1] = ccrGenerateFloat32(&randomizer);
+		}
+		else {
+			for(j = 0; j < randomValueCount; j++) {
+				randomValues[j] = ccrGenerateFloat32(&randomizer);
+			}
 		}
 
-		// Generate bottom
-		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y + 1) + i);
-
-		offset = (xSteps + 1) * ySteps;
-
-		for(j = 0; j < xSteps; j++) {
-			randomValues[offset + j] = ccrGenerateFloat32(&randomizer);
+		for(j = 0; j <= ySteps ; j++) {
+			for(k = 0; k <= width; k++) {
+				xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[(k / octaveSize) + j * (xSteps + 1)], randomValues[(k / octaveSize) + j * (xSteps + 1) + 1], (float)(k - (k / octaveSize) * octaveSize) / octaveSize, interpolationMethod);
+			}
 		}
-
-		// Generate right bound
-		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y) + i);
-
-		for(j = 0; j < randomValueCount; j++) {
-			unsigned int _y = j / (xSteps + 1);
-			float value = ccrGenerateFloat32(&randomizer);
-
-			if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
-		}
-
-		// Generate last corner value
-		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y + 1) + i);
-
-		randomValues[randomValueCount - 1] = ccrGenerateFloat32(&randomizer);
 
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;
 			unsigned int X = j - Y * width;
 
-			unsigned int Yoct = Y / octaveSize;
-			unsigned int Xoct = (X / octaveSize) + (xSteps + 1) * Yoct;
-
-			float xFactor = (float)(X - octaveSize * (X / octaveSize)) / octaveSize;
-			float yFactor = (float)(Y - octaveSize * Yoct) / octaveSize;
-			
-			(*buffer)[j] += ccnInterpolate(
-				ccnInterpolate(randomValues[Xoct], randomValues[Xoct + 1], xFactor, interpolationMethod),
-				ccnInterpolate(randomValues[Xoct + xSteps + 1], randomValues[Xoct + xSteps + 2], xFactor, interpolationMethod),
-				yFactor, interpolationMethod) * influence;
+			(*buffer)[j] += ccnInterpolate(xValues[X + (Y / octaveSize) * (width + 1)], xValues[X + (Y / octaveSize) * (width + 1) + width + 1], (float)(Y - (Y / octaveSize) * octaveSize) / octaveSize, interpolationMethod) * influence;
 		}
-
+		
+		free(xValues);
 		free(randomValues);
 
 		influence *= persistence;
