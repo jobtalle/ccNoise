@@ -144,6 +144,27 @@ int ccnGenerateWorleyNoise(
 	return CCN_ERROR_NONE;
 }
 
+int ccnGenerateWhiteNoise(
+	float **buffer,
+	unsigned int seed,
+	unsigned int width, unsigned int height)
+{
+	unsigned int size = width * height;
+	unsigned int i;
+	
+	ccRandomizer32 randomizer;
+
+	ccrSeed32(&randomizer, seed);
+
+	*buffer = malloc(size * sizeof(float));
+
+	for(i = 0; i < size; i++) {
+		(*buffer)[i] = ccrGenerateFloat32(&randomizer);
+	}
+
+	return CCN_ERROR_NONE;
+}
+
 int ccnGenerateFractalNoise(
 	float **buffer,
 	unsigned int seed,

@@ -63,19 +63,14 @@ int ccnGenerateWorleyNoise(
 	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
-// Create value noise
-int ccnGenerateValueNoise(
+// Create white noise
+int ccnGenerateWhiteNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
-	bool makeTileable,                           // Make noise tileable, costs some overhead
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
-	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
-	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+	unsigned int width, unsigned int height);    // Noise dimensions
 
-// Create perlin noise
-int ccnGeneratePerlinNoise(
+// Create value noise
+int ccnGenerateValueNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
 	bool makeTileable,                           // Make noise tileable, costs some overhead
