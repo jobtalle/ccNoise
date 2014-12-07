@@ -50,19 +50,6 @@ typedef enum {
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
 
-// Create worley noise
-int ccnGenerateWorleyNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	unsigned int points,                         // The number of points per noise
-	unsigned int n,                              // Worley noise interpolates to the n-th closest point
-	int low, int high,                           // Interpolation occurs between the lowest and highest distance
-	float lowValue, float highValue,             // Minimum and maximum value of the noise
-	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
-	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
-
 // Create white noise
 int ccnGenerateWhiteNoise(
 	float **buffer,                              // The buffer to store the generated values in
@@ -78,6 +65,19 @@ int ccnGenerateValueNoise(
 	unsigned int width, unsigned int height,     // Noise dimensions
 	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
 	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
+	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+
+// Create worley noise
+int ccnGenerateWorleyNoise(
+	float **buffer,                              // The buffer to store the generated values in
+	unsigned int seed,                           // The random seed
+	int x, int y,                                // Adjecent coordinates will tile seamlessly
+	unsigned int width, unsigned int height,     // Noise dimensions
+	unsigned int points,                         // The number of points per noise
+	unsigned int n,                              // Worley noise interpolates to the n-th closest point
+	int low, int high,                           // Interpolation occurs between the lowest and highest distance
+	float lowValue, float highValue,             // Minimum and maximum value of the noise
+	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 #ifdef __cplusplus
