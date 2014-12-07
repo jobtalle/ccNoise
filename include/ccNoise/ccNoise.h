@@ -30,15 +30,13 @@ extern "C"
 #define CCN_INFINITE UINT32_MAX
 
 #define CCN_ERROR_NONE                   0x00
-#define CCN_ERROR_INVALID_METHOD         0x01
-#define CCN_ERROR_INVALID_ARGUMENT_RANGE 0x02
+#define CCN_ERROR_INVALID_ARGUMENT_RANGE 0x01
 
 typedef enum {
 	CCN_INTERP_LINEAR,
 	CCN_INTERP_QUADRATIC,
 	CCN_INTERP_QUADRATIC_INVERSE,
-	CCN_INTERP_COSINE,
-	CCN_INTERP_CUBIC
+	CCN_INTERP_COSINE
 } ccnInterpolationMethod;
 
 typedef enum {
@@ -64,7 +62,7 @@ int ccnGenerateWorleyNoise(
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create value noise
-int ccnGenerateFractalNoise(
+int ccnGenerateValueNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
 	bool makeTileable,                           // Make noise tileable, costs some overhead
