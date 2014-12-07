@@ -28,7 +28,7 @@ static void generate(int left, int top)
 	float *noise = NULL;
 
 	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, true, left?0:1, top?0:1, WIDTH, HEIGHT, 2, 64, CCN_INTERP_COSINE);
+	ccnGenerateFractalNoise(&noise, seed, false, left?0:1, top?0:1, WIDTH, HEIGHT, 2, 64, CCN_INTERP_CUBIC);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);

@@ -83,6 +83,8 @@ int ccnGenerateWorleyNoise(
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
 
+	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
+
 	*buffer = malloc(sizeof(float)*size);
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
@@ -142,7 +144,7 @@ int ccnGenerateWorleyNoise(
 	return CCN_ERROR_NONE;
 }
 
-int ccnGenerateValueNoise(
+int ccnGenerateFractalNoise(
 	float **buffer,
 	unsigned int seed,
 	bool makeTileable,
@@ -224,7 +226,17 @@ int ccnGenerateValueNoise(
 				else {
 					unsigned int index = octX + j * (xSteps + 1);
 
-					xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[index], randomValues[index + 1], factor, interpolationMethod);
+					if(interpolationMethod == CCN_INTERP_CUBIC) {
+						int i0 = octX == 0?index:index - 1;
+						int i1 = index;
+						int i2 = index + 1;
+						int i3 = octX == xSteps - 1?index + 1:index + 2;
+
+						xValues[k + j * (width + 1)] = ccTriInterpolateCubic(randomValues[i0], randomValues[i1], randomValues[i2], randomValues[i3], factor);
+					}
+					else {
+						xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[index], randomValues[index + 1], factor, interpolationMethod);
+					}
 				}
 			}
 		}
@@ -243,7 +255,17 @@ int ccnGenerateValueNoise(
 			else {
 				unsigned int index = X + octY * (width + 1);
 
-				(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width + 1], factor, interpolationMethod) * influence;
+				if(interpolationMethod == CCN_INTERP_CUBIC) {
+					int i0 = octY == 0?index:index - width - 1;
+					int i1 = index;
+					int i2 = index + width + 1;
+					int i3 = octY == ySteps - 1?index + 1:index + ((width + 1) << 1);
+
+					(*buffer)[j] += ccTriInterpolateCubic(xValues[i0], xValues[i1], xValues[i2], xValues[i3], factor) * influence;
+				}
+				else {
+					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width + 1], factor, interpolationMethod) * influence;
+				}
 			}
 		}
 		
