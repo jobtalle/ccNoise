@@ -227,12 +227,7 @@ int ccnGenerateFractalNoise(
 					unsigned int index = octX + j * (xSteps + 1);
 
 					if(interpolationMethod == CCN_INTERP_CUBIC) {
-						int i0 = octX == 0?index:index - 1;
-						int i1 = index;
-						int i2 = index + 1;
-						int i3 = octX == xSteps - 1?index + 1:index + 2;
-
-						xValues[k + j * (width + 1)] = ccTriInterpolateCubic(randomValues[i0], randomValues[i1], randomValues[i2], randomValues[i3], factor);
+						xValues[k + j * (width + 1)] = ccTriInterpolateCubic(randomValues[octX == 0?index:index - 1], randomValues[index], randomValues[index + 1], randomValues[octX == xSteps - 1?index + 1:index + 2], factor);
 					}
 					else {
 						xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[index], randomValues[index + 1], factor, interpolationMethod);
@@ -256,12 +251,7 @@ int ccnGenerateFractalNoise(
 				unsigned int index = X + octY * (width + 1);
 
 				if(interpolationMethod == CCN_INTERP_CUBIC) {
-					int i0 = octY == 0?index:index - width - 1;
-					int i1 = index;
-					int i2 = index + width + 1;
-					int i3 = octY == ySteps - 1?index + 1:index + ((width + 1) << 1);
-
-					(*buffer)[j] += ccTriInterpolateCubic(xValues[i0], xValues[i1], xValues[i2], xValues[i3], factor) * influence;
+					(*buffer)[j] += ccTriInterpolateCubic(xValues[octY == 0?index:index - width - 1], xValues[index], xValues[index + width + 1], xValues[octY == ySteps - 1?index + 1:index + ((width + 1) << 1)], factor) * influence;
 				}
 				else {
 					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width + 1], factor, interpolationMethod) * influence;
