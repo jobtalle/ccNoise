@@ -9,18 +9,6 @@
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
 
-#define _CCN_CARTESIAN_INDEX(x, y, width) ((x) + (y)*(width))
-
-#define _CCN_CENTER       0
-#define _CCN_RIGHT        1
-#define _CCN_RIGHT_BOTTOM 2
-#define _CCN_BOTTOM       3
-#define _CCN_LEFT_BOTTOM  4
-#define _CCN_LEFT         5
-#define _CCN_LEFT_TOP     6
-#define _CCN_TOP          7
-#define _CCN_RIGHT_TOP    8
-
 typedef struct {
 	int x, y;
 } ccnPoint;
@@ -55,6 +43,36 @@ static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distan
 	}
 }
 
+static void ccnGenerateOffsetNoise(
+	float **buffer,
+	unsigned int seed,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	ccnPoint negativeOffset, ccnPoint positiveOffset,
+	ccnFlags tileFlags)
+{
+	unsigned int x, y, offset;
+
+	unsigned int totalWidth = width + negativeOffset.x + positiveOffset.x;
+	unsigned int totalHeight = height + negativeOffset.y + positiveOffset.y;
+	unsigned int totalSize = totalWidth * totalHeight;
+
+	float *whiteNoiseBuffer;
+
+	*buffer = malloc(sizeof(float)*totalSize);
+
+	// Generate central noise
+	ccnGenerateWhiteNoise(&whiteNoiseBuffer, seed, width, height);
+
+	for(y = 0; y < height; y++) {
+		for(x = 0; x < width; x++) {
+			(*buffer)[(y + negativeOffset.y) * totalWidth + x + negativeOffset.x] = whiteNoiseBuffer[(y * width) + x];
+		}
+	}
+
+	free(whiteNoiseBuffer);
+}
+
 unsigned int ccnCoordinateUid(int x, int y)
 {
 	unsigned int shell = max(abs(x), abs(y));
@@ -68,125 +86,6 @@ unsigned int ccnCoordinateUid(int x, int y)
 	}
 
 	return uid;
-}
-
-int ccnGenerateWhiteNoise(
-	float **buffer,
-	unsigned int seed,
-	unsigned int width, unsigned int height)
-{
-	unsigned int size = width * height;
-	unsigned int i;
-	
-	ccRandomizer32 randomizer;
-
-	ccrSeed32(&randomizer, seed);
-
-	*buffer = malloc(size * sizeof(float));
-
-	for(i = 0; i < size; i++) {
-		(*buffer)[i] = ccrGenerateFloat32(&randomizer);
-	}
-
-	return CCN_ERROR_NONE;
-}
-
-int ccnGenerateValueNoise(
-	float **buffer,
-	unsigned int seed,
-	bool makeTileable,
-	int x, int y,
-	unsigned int width, unsigned int height,
-	unsigned int octaves,
-	unsigned int maxOctave,
-	ccnInterpolationMethod interpolationMethod)
-{
-	unsigned int i, j;
-	unsigned int size = width * height;
-	unsigned int scale = maxOctave;
-	
-	float influence = 0.5f;
-
-	*buffer = calloc(size, sizeof(float));
-
-	for(i = 0; i < octaves; i++) {
-		float *sourceNoise[4];
-
-		// The dimensions for this octave
-		unsigned int xSteps = width / scale;
-		unsigned int ySteps = height / scale;
-
-#define _CCN_VALUE_NOISE_SEED(X, Y) seed + ccnCoordinateUid(X, Y) + i
-
-		ccnGenerateWhiteNoise(&sourceNoise[_CCN_CENTER], _CCN_VALUE_NOISE_SEED(x, y), xSteps, ySteps);
-		ccnGenerateWhiteNoise(&sourceNoise[_CCN_RIGHT], _CCN_VALUE_NOISE_SEED(x + 1, y), xSteps, ySteps);
-		ccnGenerateWhiteNoise(&sourceNoise[_CCN_RIGHT_BOTTOM], _CCN_VALUE_NOISE_SEED(x + 1, y + 1), 1, 1);
-		ccnGenerateWhiteNoise(&sourceNoise[_CCN_BOTTOM], _CCN_VALUE_NOISE_SEED(x, y + 1), xSteps, 1);
-
-#undef _CCN_VALUE_NOISE_SEED
-
-		// Calculate Y values and add to noise
-		for(j = 0; j < size; j++) {
-			unsigned int Y = j / width;
-			unsigned int X = j - Y * width;
-
-			unsigned int noiseX = X / scale;
-			unsigned int noiseY = Y / scale;
-
-			float xFactor = (float)(X - noiseX * scale) / scale;
-			float yFactor = (float)(Y - noiseY * scale) / scale;
-
-			float center, right, rightBottom, bottom;
-
-			center = sourceNoise[_CCN_CENTER][_CCN_CARTESIAN_INDEX(noiseX, noiseY, xSteps)];
-
-			if(noiseX == xSteps - 1) {
-				right = sourceNoise[_CCN_RIGHT][_CCN_CARTESIAN_INDEX(0, noiseY, xSteps)];
-			}
-			else {
-				right = sourceNoise[_CCN_CENTER][_CCN_CARTESIAN_INDEX(noiseX + 1, noiseY, xSteps)];
-			}
-
-			if(noiseY == ySteps - 1) {
-				bottom = sourceNoise[_CCN_BOTTOM][_CCN_CARTESIAN_INDEX(noiseX, 0, xSteps)];
-			}
-			else {
-				bottom = sourceNoise[_CCN_CENTER][_CCN_CARTESIAN_INDEX(noiseX, noiseY + 1, xSteps)];
-			}
-
-			if(noiseX == xSteps - 1 && noiseY == ySteps - 1) {
-				rightBottom = sourceNoise[_CCN_RIGHT_BOTTOM][0];
-			}
-			else {
-				if(noiseX == xSteps - 1) {
-					rightBottom = sourceNoise[_CCN_RIGHT][_CCN_CARTESIAN_INDEX(0, noiseY + 1, xSteps)];
-				}
-				else if(noiseY == ySteps - 1) {
-					rightBottom = sourceNoise[_CCN_BOTTOM][_CCN_CARTESIAN_INDEX(noiseX + 1, 0, xSteps)];
-				}
-				else {
-					rightBottom = sourceNoise[_CCN_CENTER][_CCN_CARTESIAN_INDEX(noiseX + 1, noiseY + 1, xSteps)];
-				}
-			}
-			
-			(*buffer)[j] += ccnInterpolate(
-				ccnInterpolate(center, right, xFactor, interpolationMethod),
-				ccnInterpolate(bottom, rightBottom, xFactor, interpolationMethod),
-				yFactor, interpolationMethod) * influence;
-				
-		}
-
-		// Clean up and go to next octave
-		free(sourceNoise[_CCN_CENTER]);
-		free(sourceNoise[_CCN_RIGHT]);
-		free(sourceNoise[_CCN_RIGHT_BOTTOM]);
-		free(sourceNoise[_CCN_BOTTOM]);
-
-		scale >>= 1;
-		influence *= 0.5f;
-	}
-
-	return CCN_ERROR_NONE;
 }
 
 int ccnGenerateWorleyNoise(
@@ -252,7 +151,7 @@ int ccnGenerateWorleyNoise(
 		}
 
 		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
-
+		
 		if(pointId <= n) {
 			(*buffer)[i] = highValue;
 		}
@@ -269,6 +168,162 @@ int ccnGenerateWorleyNoise(
 
 	free(pointList);
 	free(pointsDistances);
+
+	return CCN_ERROR_NONE;
+}
+
+int ccnGenerateWhiteNoise(
+	float **buffer,
+	unsigned int seed,
+	unsigned int width, unsigned int height)
+{
+	unsigned int size = width * height;
+	unsigned int i;
+	
+	ccRandomizer32 randomizer;
+
+	ccrSeed32(&randomizer, seed);
+
+	*buffer = malloc(size * sizeof(float));
+
+	for(i = 0; i < size; i++) {
+		(*buffer)[i] = ccrGenerateFloat32(&randomizer);
+	}
+
+	return CCN_ERROR_NONE;
+}
+
+int ccnGenerateValueNoise(
+	float **buffer,
+	unsigned int seed,
+	ccnFlags tileFlags,
+	int hPeriod, int vPeriod,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	unsigned int octaves,
+	unsigned int maxOctave,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int size = width * height;
+	unsigned int octaveSize = maxOctave;
+	unsigned int i, j, k;
+	
+	float influence = 0.5f; // TODO: pick number to make range [0, 1]
+
+	ccRandomizer32 randomizer;
+
+	octaveSize = maxOctave;
+
+	*buffer = calloc(size, sizeof(float));
+
+	for(i = 0; i < octaves; i++) {
+		unsigned int xSteps = width / octaveSize;
+		unsigned int ySteps = height / octaveSize;
+		unsigned int randomValueCount = (xSteps + 1) * (ySteps + 1);
+		unsigned int offset;
+		float *randomValues = malloc(randomValueCount * sizeof(float));
+		float *xValues = malloc((width + 1) * (ySteps + 1) * sizeof(float));
+
+		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y) + i);
+
+		if((tileFlags & CCN_FLAG_TILE_HORIZONTAL) || (tileFlags & CCN_FLAG_TILE_VERTICAL)) {
+			unsigned int randomValuesMinusBottom = randomValueCount - xSteps - 1;
+
+			// Generate own
+			for(j = 0; j < randomValuesMinusBottom; j++) {
+				randomValues[j] = ccrGenerateFloat32(&randomizer);
+			}
+
+			// Generate bottom
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y + 1) + i);
+
+			offset = (xSteps + 1) * ySteps;
+
+			for(j = 0; j < xSteps; j++) {
+				randomValues[offset + j] = ccrGenerateFloat32(&randomizer);
+			}
+
+			// Generate right
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y) + i);
+
+			for(j = 0; j < randomValueCount; j++) {
+				unsigned int _y = j / (xSteps + 1);
+				float value = ccrGenerateFloat32(&randomizer);
+
+				if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
+			}
+
+			// Generate right bottom
+			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y + 1) + i);
+
+			randomValues[randomValueCount - 1] = ccrGenerateFloat32(&randomizer);
+		}
+		else {
+			for(j = 0; j < randomValueCount; j++) {
+				randomValues[j] = ccrGenerateFloat32(&randomizer);
+			}
+		}
+
+		for(j = 0; j <= ySteps ; j++) {
+			for(k = 0; k <= width; k++) {
+				unsigned octX = k / octaveSize;
+
+				float factor = (float)(k - octX * octaveSize) / octaveSize;
+
+				if(factor == 0) {
+					xValues[k + j * (width + 1)] = randomValues[octX + j * (xSteps + 1)];
+				}
+				else {
+					unsigned int index = octX + j * (xSteps + 1);
+
+					if(interpolationMethod == CCN_INTERP_CUBIC) {
+						xValues[k + j * (width + 1)] = ccTriInterpolateCubic(randomValues[octX == 0?index:index - 1], randomValues[index], randomValues[index + 1], randomValues[octX == xSteps - 1?index + 1:index + 2], factor);
+					}
+					else {
+						xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[index], randomValues[index + 1], factor, interpolationMethod);
+					}
+				}
+			}
+		}
+
+		for(j = 0; j < size; j++) {
+			unsigned int Y = j / width;
+			unsigned int X = j - Y * width;
+
+			unsigned octY = Y / octaveSize;
+
+			float factor = (float)(Y - octY * octaveSize) / octaveSize;
+
+			if(factor == 0) {
+				(*buffer)[j] += xValues[X + octY * (width + 1)] * influence;
+			}
+			else {
+				unsigned int index = X + octY * (width + 1);
+
+				if(interpolationMethod == CCN_INTERP_CUBIC) {
+					(*buffer)[j] += ccTriInterpolateCubic(xValues[octY == 0?index:index - width - 1], xValues[index], xValues[index + width + 1], xValues[octY == ySteps - 1?index + 1:index + ((width + 1) << 1)], factor) * influence;
+				}
+				else {
+					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width + 1], factor, interpolationMethod) * influence;
+				}
+			}
+		}
+		
+		free(xValues);
+		free(randomValues);
+
+		influence *= 0.5f;
+
+		octaveSize >>= 1;
+		if(octaveSize == 0) {
+			if(octaves == CCN_INFINITE) {
+				break;
+			}
+			else {
+				return CCN_ERROR_INVALID_ARGUMENT_RANGE;
+			}
+		}
+	}
 
 	return CCN_ERROR_NONE;
 }

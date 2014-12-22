@@ -28,10 +28,14 @@ extern "C"
 #endif
 
 #define CCN_INFINITE UINT32_MAX
+#define CCN_MAXPERIOD UINT16_MAX
 
 #define CCN_ERROR_NONE                   0x00
 #define CCN_ERROR_INVALID_ARGUMENT_RANGE 0x01
 #define CCN_ERROR_INVALID_METHOD         0x02
+
+#define CCN_FLAG_TILE_HORIZONTAL         0x01
+#define CCN_FLAG_TILE_VERTICAL           0x02
 
 typedef enum {
 	CCN_INTERP_LINEAR,
@@ -47,25 +51,10 @@ typedef enum {
 	CCN_DIST_CHEBYCHEV
 } ccnDistanceMethod;
 
+typedef char ccnFlags;
+
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
-
-// Create white noise
-int ccnGenerateWhiteNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	unsigned int width, unsigned int height);    // Noise dimensions
-
-// Create value noise
-int ccnGenerateValueNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	bool makeTileable,                           // Make noise tileable, costs some overhead
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
-	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
-	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create worley noise
 int ccnGenerateWorleyNoise(
@@ -78,6 +67,24 @@ int ccnGenerateWorleyNoise(
 	int low, int high,                           // Interpolation occurs between the lowest and highest distance
 	float lowValue, float highValue,             // Minimum and maximum value of the noise
 	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
+	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+
+// Create white noise
+int ccnGenerateWhiteNoise(
+	float **buffer,                              // The buffer to store the generated values in
+	unsigned int seed,                           // The random seed
+	unsigned int width, unsigned int height);    // Noise dimensions
+
+// Create value noise
+int ccnGenerateValueNoise(
+	float **buffer,                              // The buffer to store the generated values in
+	unsigned int seed,                           // The random seed
+	ccnFlags tileFlags,                          // Make noise tileable, costs some overhead
+	int hPeriod, int vPeriod,                    // The number of coordinate units after which the noise repeats, CCN_MAXPERIOD for the highest period
+	int x, int y,                                // Adjecent coordinates will tile seamlessly
+	unsigned int width, unsigned int height,     // Noise dimensions
+	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
+	unsigned int maxOctave,                      // The largest interpolation distance, halved for each octave
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 #ifdef __cplusplus
