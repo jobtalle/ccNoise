@@ -36,6 +36,8 @@ extern "C"
 
 #define CCN_FLAG_TILE_HORIZONTAL         0x01
 #define CCN_FLAG_TILE_VERTICAL           0x02
+#define CCN_FLAG_REPEAT_HORIZONTAL       0x04
+#define CCN_FLAG_REPEAT_VERTICAL         0x08
 
 typedef enum {
 	CCN_INTERP_LINEAR,

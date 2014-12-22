@@ -48,10 +48,9 @@ static void ccnGenerateOffsetNoise(
 	unsigned int seed,
 	int x, int y,
 	unsigned int width, unsigned int height,
-	ccnPoint negativeOffset, ccnPoint positiveOffset,
-	ccnFlags tileFlags)
+	ccnPoint negativeOffset, ccnPoint positiveOffset)
 {
-	unsigned int x, y, offset;
+	unsigned int X, Y, offset;
 
 	unsigned int totalWidth = width + negativeOffset.x + positiveOffset.x;
 	unsigned int totalHeight = height + negativeOffset.y + positiveOffset.y;
@@ -64,9 +63,9 @@ static void ccnGenerateOffsetNoise(
 	// Generate central noise
 	ccnGenerateWhiteNoise(&whiteNoiseBuffer, seed, width, height);
 
-	for(y = 0; y < height; y++) {
-		for(x = 0; x < width; x++) {
-			(*buffer)[(y + negativeOffset.y) * totalWidth + x + negativeOffset.x] = whiteNoiseBuffer[(y * width) + x];
+	for(Y = 0; Y < height; Y++) {
+		for(X = 0; X < width; X++) {
+			(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
 		}
 	}
 
@@ -208,9 +207,23 @@ int ccnGenerateValueNoise(
 	unsigned int octaveSize = maxOctave;
 	unsigned int i, j, k;
 	
-	float influence = 0.5f; // TODO: pick number to make range [0, 1]
+	float influence = 0.5f;
 
-	ccRandomizer32 randomizer;
+	ccnPoint negativeOffset;
+	ccnPoint positiveOffset;
+
+	if(interpolationMethod == CCN_INTERP_CUBIC) {
+		negativeOffset.x = 1;
+		negativeOffset.y = 1;
+		positiveOffset.x = 2;
+		positiveOffset.y = 2;
+	}
+	else {
+		negativeOffset.x = 0;
+		negativeOffset.y = 0;
+		positiveOffset.x = 1;
+		positiveOffset.y = 1;
+	}
 
 	octaveSize = maxOctave;
 
@@ -219,51 +232,17 @@ int ccnGenerateValueNoise(
 	for(i = 0; i < octaves; i++) {
 		unsigned int xSteps = width / octaveSize;
 		unsigned int ySteps = height / octaveSize;
-		unsigned int randomValueCount = (xSteps + 1) * (ySteps + 1);
-		unsigned int offset;
-		float *randomValues = malloc(randomValueCount * sizeof(float));
-		float *xValues = malloc((width + 1) * (ySteps + 1) * sizeof(float));
+		unsigned int offsetWidth = xSteps + negativeOffset.x + positiveOffset.x;
+		unsigned int offsetHeight = ySteps + negativeOffset.y + positiveOffset.y;
 
-		ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y) + i);
+		float *offsetNoise;
+		float *xValues = malloc(width * offsetHeight * sizeof(float));
 
-		if((tileFlags & CCN_FLAG_TILE_HORIZONTAL) || (tileFlags & CCN_FLAG_TILE_VERTICAL)) {
-			unsigned int randomValuesMinusBottom = randomValueCount - xSteps - 1;
+		ccnGenerateOffsetNoise(&offsetNoise, seed, x, y, xSteps, ySteps, negativeOffset, positiveOffset);
 
-			// Generate own
-			for(j = 0; j < randomValuesMinusBottom; j++) {
-				randomValues[j] = ccrGenerateFloat32(&randomizer);
-			}
+		// Find x values
 
-			// Generate bottom
-			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x, y + 1) + i);
-
-			offset = (xSteps + 1) * ySteps;
-
-			for(j = 0; j < xSteps; j++) {
-				randomValues[offset + j] = ccrGenerateFloat32(&randomizer);
-			}
-
-			// Generate right
-			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y) + i);
-
-			for(j = 0; j < randomValueCount; j++) {
-				unsigned int _y = j / (xSteps + 1);
-				float value = ccrGenerateFloat32(&randomizer);
-
-				if(j - _y * (xSteps + 1) == 0) randomValues[(_y + 1) * (xSteps + 1) - 1] = value;
-			}
-
-			// Generate right bottom
-			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + 1, y + 1) + i);
-
-			randomValues[randomValueCount - 1] = ccrGenerateFloat32(&randomizer);
-		}
-		else {
-			for(j = 0; j < randomValueCount; j++) {
-				randomValues[j] = ccrGenerateFloat32(&randomizer);
-			}
-		}
-
+		/*
 		for(j = 0; j <= ySteps ; j++) {
 			for(k = 0; k <= width; k++) {
 				unsigned octX = k / octaveSize;
@@ -285,6 +264,7 @@ int ccnGenerateValueNoise(
 				}
 			}
 		}
+		*/
 
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;
@@ -294,23 +274,14 @@ int ccnGenerateValueNoise(
 
 			float factor = (float)(Y - octY * octaveSize) / octaveSize;
 
-			if(factor == 0) {
-				(*buffer)[j] += xValues[X + octY * (width + 1)] * influence;
-			}
-			else {
-				unsigned int index = X + octY * (width + 1);
+			//TODO: handle factor==0 case
 
-				if(interpolationMethod == CCN_INTERP_CUBIC) {
-					(*buffer)[j] += ccTriInterpolateCubic(xValues[octY == 0?index:index - width - 1], xValues[index], xValues[index + width + 1], xValues[octY == ySteps - 1?index + 1:index + ((width + 1) << 1)], factor) * influence;
-				}
-				else {
-					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width + 1], factor, interpolationMethod) * influence;
-				}
-			}
+			unsigned int index = X + (octY + negativeOffset.y) * width;
+
+			(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
 		}
 		
 		free(xValues);
-		free(randomValues);
 
 		influence *= 0.5f;
 
