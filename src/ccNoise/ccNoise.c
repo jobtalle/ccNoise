@@ -253,7 +253,12 @@ int ccnGenerateValueNoise(
 					xValues[j * width + k] = offsetNoise[offsetIndex];
 				}
 				else {
-					xValues[j * width + k] = ccnInterpolate(offsetNoise[offsetIndex], offsetNoise[offsetIndex + 1], factor, interpolationMethod);
+					if(interpolationMethod == CCN_INTERP_CUBIC) {
+						xValues[j * width + k] = ccTriInterpolateCubic(offsetNoise[offsetIndex - 1], offsetNoise[offsetIndex], offsetNoise[offsetIndex + 1], offsetNoise[offsetIndex + 2], factor);
+					}
+					else {
+						xValues[j * width + k] = ccnInterpolate(offsetNoise[offsetIndex], offsetNoise[offsetIndex + 1], factor, interpolationMethod);
+					}
 				}
 			}
 		}
@@ -273,10 +278,15 @@ int ccnGenerateValueNoise(
 			unsigned int index = X + (octY + negativeOffset.y) * width;
 
 			if(factor == 0) {
-				(*buffer)[j] += xValues[index];
+				(*buffer)[j] += xValues[index] * influence;
 			}
 			else {
-				(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
+				if(interpolationMethod == CCN_INTERP_CUBIC) {
+					(*buffer)[j] += ccTriInterpolateCubic(xValues[index - width], xValues[index], xValues[index + width], xValues[index + (width << 1)], factor) * influence;
+				}
+				else {
+					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
+				}
 			}
 		}
 		
