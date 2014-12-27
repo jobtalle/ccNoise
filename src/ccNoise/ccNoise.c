@@ -273,8 +273,6 @@ int ccnGenerateValueNoise(
 
 			float factor = (float)(Y - octY * octaveSize) / octaveSize;
 
-			//TODO: handle factor==0 case
-
 			unsigned int index = X + (octY + negativeOffset.y) * width;
 
 			if(factor == 0) {
