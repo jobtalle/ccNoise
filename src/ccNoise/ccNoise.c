@@ -43,14 +43,20 @@ static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distan
 	}
 }
 
+static unsigned int ccnGenerateNoiseSeed(unsigned int seed, int x, int y)
+{
+	return seed + seed * ccnCoordinateUid(x, y);
+}
+
 static void ccnGenerateOffsetNoise(
 	float **buffer,
 	unsigned int seed,
+	ccnFlags tileFlags,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	ccnPoint negativeOffset, ccnPoint positiveOffset)
 {
-	unsigned int X, Y, offset;
+	unsigned int X, Y;
 
 	unsigned int totalWidth = width + negativeOffset.x + positiveOffset.x;
 	unsigned int totalHeight = height + negativeOffset.y + positiveOffset.y;
@@ -61,13 +67,43 @@ static void ccnGenerateOffsetNoise(
 	*buffer = malloc(sizeof(float)*totalSize);
 
 	// Generate central noise
-	ccnGenerateWhiteNoise(&whiteNoiseBuffer, seed, width, height);
+	ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y), width, height);
 
 	for(Y = 0; Y < height; Y++) {
 		for(X = 0; X < width; X++) {
 			(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
 		}
 	}
+
+	// Generate right noise
+	if(positiveOffset.x > 0) {
+		if(tileFlags & CCN_FLAG_TILE_HORIZONTAL) {
+			ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y), width, height);
+
+			for(Y = 0; Y < height; Y++) {
+				(*buffer)[totalWidth - 1 + totalWidth * (Y + negativeOffset.y)] = whiteNoiseBuffer[Y * width];
+			}
+		}
+		else {
+			for(Y = 0; Y < height; Y++) {
+				(*buffer)[totalWidth - 1 + totalWidth * (Y + negativeOffset.y)] = (*buffer)[negativeOffset.x + totalWidth * (Y + negativeOffset.y)];
+			}
+		}
+	}
+
+	// Generate right bottom noise
+
+	// Generate bottom noise
+
+	// Generate left bottom noise
+
+	// Generate left noise
+
+	// Generate left top noise
+
+	// Generate top noise
+
+	// Generate right top noise
 
 	free(whiteNoiseBuffer);
 }
@@ -118,7 +154,7 @@ int ccnGenerateWorleyNoise(
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
 			ccRandomizer32 randomizer;
 
-			ccrSeed32(&randomizer, seed + ccnCoordinateUid(x + offset.x, y + offset.y));
+			ccrSeed32(&randomizer, ccnGenerateNoiseSeed(seed, x + offset.x, y + offset.y));
 
 			for(i = 0; i < points; i++) {
 				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
@@ -238,9 +274,7 @@ int ccnGenerateValueNoise(
 		float *offsetNoise;
 		float *xValues = malloc(width * offsetHeight * sizeof(float));
 
-		ccnGenerateOffsetNoise(&offsetNoise, seed, x, y, xSteps, ySteps, negativeOffset, positiveOffset);
-
-		// Find x values
+		ccnGenerateOffsetNoise(&offsetNoise, seed, tileFlags, x, y, xSteps, ySteps, negativeOffset, positiveOffset);
 
 		for(j = 0; j < offsetHeight; j++) {
 			for(k = 0; k < width; k++) {
@@ -262,8 +296,6 @@ int ccnGenerateValueNoise(
 				}
 			}
 		}
-
-		// Interpolate x values
 
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;

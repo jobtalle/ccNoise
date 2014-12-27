@@ -28,7 +28,7 @@ static void generate(int left, int top)
 	float *noise = NULL;
 
 	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, CCN_FLAG_TILE_HORIZONTAL | CCN_FLAG_TILE_VERTICAL, CCN_MAXPERIOD, CCN_MAXPERIOD, left?0:1, top?0:1, WIDTH, HEIGHT, 2, 64, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise(&noise, seed, CCN_FLAG_REPEAT_HORIZONTAL | CCN_FLAG_TILE_VERTICAL, CCN_MAXPERIOD, CCN_MAXPERIOD, left?0:0, top?0:1, WIDTH, HEIGHT, 2, 64, CCN_INTERP_COSINE);
 	//ccnGenerateWhiteNoise(&noise, seed, WIDTH, HEIGHT);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
