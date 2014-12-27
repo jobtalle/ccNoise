@@ -242,29 +242,23 @@ int ccnGenerateValueNoise(
 
 		// Find x values
 
-		/*
-		for(j = 0; j <= ySteps ; j++) {
-			for(k = 0; k <= width; k++) {
-				unsigned octX = k / octaveSize;
+		for(j = 0; j < offsetHeight; j++) {
+			for(k = 0; k < width; k++) {
+				unsigned int octX = k / octaveSize;
+				unsigned int offsetIndex = j * offsetWidth + negativeOffset.x + octX;
 
 				float factor = (float)(k - octX * octaveSize) / octaveSize;
 
 				if(factor == 0) {
-					xValues[k + j * (width + 1)] = randomValues[octX + j * (xSteps + 1)];
+					xValues[j * width + k] = offsetNoise[offsetIndex];
 				}
 				else {
-					unsigned int index = octX + j * (xSteps + 1);
-
-					if(interpolationMethod == CCN_INTERP_CUBIC) {
-						xValues[k + j * (width + 1)] = ccTriInterpolateCubic(randomValues[octX == 0?index:index - 1], randomValues[index], randomValues[index + 1], randomValues[octX == xSteps - 1?index + 1:index + 2], factor);
-					}
-					else {
-						xValues[k + j * (width + 1)] = ccnInterpolate(randomValues[index], randomValues[index + 1], factor, interpolationMethod);
-					}
+					xValues[j * width + k] = ccnInterpolate(offsetNoise[offsetIndex], offsetNoise[offsetIndex + 1], factor, interpolationMethod);
 				}
 			}
 		}
-		*/
+
+		// Interpolate x values
 
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;
@@ -278,7 +272,12 @@ int ccnGenerateValueNoise(
 
 			unsigned int index = X + (octY + negativeOffset.y) * width;
 
-			(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
+			if(factor == 0) {
+				(*buffer)[j] += xValues[index];
+			}
+			else {
+				(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
+			}
 		}
 		
 		free(xValues);
