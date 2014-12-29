@@ -51,7 +51,7 @@ static unsigned int ccnGenerateNoiseSeed(unsigned int seed, int x, int y)
 static void ccnGenerateOffsetNoise(
 	float **buffer,
 	unsigned int seed,
-	ccnFlags tileFlags,
+	cnnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	ccnPoint negativeOffset, ccnPoint positiveOffset)
@@ -75,7 +75,7 @@ static void ccnGenerateOffsetNoise(
 		}
 	}
 
-	// Generate right noise
+	// Generate horizontal noises
 	if(positiveOffset.x > 0) {
 		if(tileFlags & CCN_FLAG_TILE_HORIZONTAL) {
 			ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y), width, height);
@@ -231,8 +231,7 @@ int ccnGenerateWhiteNoise(
 int ccnGenerateValueNoise(
 	float **buffer,
 	unsigned int seed,
-	ccnFlags tileFlags,
-	int hPeriod, int vPeriod,
+	cnnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	unsigned int octaves,
@@ -274,7 +273,7 @@ int ccnGenerateValueNoise(
 		float *offsetNoise;
 		float *xValues = malloc(width * offsetHeight * sizeof(float));
 
-		ccnGenerateOffsetNoise(&offsetNoise, seed, tileFlags, x, y, xSteps, ySteps, negativeOffset, positiveOffset);
+		ccnGenerateOffsetNoise(&offsetNoise, seed, tileConfig, x, y, xSteps, ySteps, negativeOffset, positiveOffset);
 
 		for(j = 0; j < offsetHeight; j++) {
 			for(k = 0; k < width; k++) {

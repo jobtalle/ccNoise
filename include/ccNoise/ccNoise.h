@@ -28,16 +28,10 @@ extern "C"
 #endif
 
 #define CCN_INFINITE UINT32_MAX
-#define CCN_MAXPERIOD UINT16_MAX
 
 #define CCN_ERROR_NONE                   0x00
 #define CCN_ERROR_INVALID_ARGUMENT_RANGE 0x01
 #define CCN_ERROR_INVALID_METHOD         0x02
-
-#define CCN_FLAG_TILE_HORIZONTAL         0x01
-#define CCN_FLAG_TILE_VERTICAL           0x02
-#define CCN_FLAG_REPEAT_HORIZONTAL       0x04
-#define CCN_FLAG_REPEAT_VERTICAL         0x08
 
 typedef enum {
 	CCN_INTERP_LINEAR,
@@ -53,7 +47,10 @@ typedef enum {
 	CCN_DIST_CHEBYCHEV
 } ccnDistanceMethod;
 
-typedef char ccnFlags;
+typedef struct {
+	bool tile;
+	unsigned int xPeriod, yPeriod;
+} cnnTileConfiguration;
 
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
@@ -81,8 +78,7 @@ int ccnGenerateWhiteNoise(
 int ccnGenerateValueNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
-	ccnFlags tileFlags,                          // Make noise tileable, costs some overhead
-	int hPeriod, int vPeriod,                    // The number of coordinate units after which the noise repeats, CCN_MAXPERIOD for the highest period
+	cnnTileConfiguration *tileConfig,             // Make noise tileable, costs some overhead
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
 	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail
