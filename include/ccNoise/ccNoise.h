@@ -47,9 +47,26 @@ typedef enum {
 	CCN_DIST_CHEBYCHEV
 } ccnDistanceMethod;
 
+typedef enum {
+	CCN_TILE_NOT,
+	CCN_TILE_CARTESIAN,
+	CCN_TILE_CUSTOM
+} ccnTileMethod;
+
 typedef struct {
-	bool tile;
+	ccnTileMethod tileMethod;
 	unsigned int xPeriod, yPeriod;
+
+	struct {
+		ccPoint top,
+		rightTop,
+		right,
+		rightBottom,
+		bottom,
+		leftBottom,
+		left,
+		leftTop;
+	} customNeighbors;
 } cnnTileConfiguration;
 
 // Create an unique as possible ID for a coordinate

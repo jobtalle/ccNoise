@@ -9,10 +9,6 @@
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
 
-typedef struct {
-	int x, y;
-} ccnPoint;
-
 static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
 {
 	switch(interpolationMethod) {
@@ -29,7 +25,7 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 	}
 }
 
-static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
+static unsigned int ccnDistance(ccPoint a, ccPoint b, ccnDistanceMethod distanceMethod)
 {
 	switch(distanceMethod) {
 	case CCN_DIST_MANHATTAN:
@@ -45,7 +41,7 @@ static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distan
 
 static unsigned int ccnGenerateNoiseSeed(unsigned int seed, int x, int y)
 {
-	return seed + seed * ccnCoordinateUid(x, y);
+	return seed + ccnCoordinateUid(x, y);
 }
 
 static void ccnGenerateOffsetNoise(
@@ -54,7 +50,7 @@ static void ccnGenerateOffsetNoise(
 	cnnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
-	ccnPoint negativeOffset, ccnPoint positiveOffset)
+	ccPoint negativeOffset, ccPoint positiveOffset)
 {
 	unsigned int X, Y;
 
@@ -64,48 +60,80 @@ static void ccnGenerateOffsetNoise(
 
 	float *whiteNoiseBuffer;
 
-	*buffer = malloc(sizeof(float)*totalSize);
-
-	// Generate central noise
-	ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y), width, height);
-
-	for(Y = 0; Y < height; Y++) {
-		for(X = 0; X < width; X++) {
-			(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
-		}
+	// If not tiling
+	if(tileConfig->tileMethod == CCN_TILE_NOT) {
+		ccnGenerateWhiteNoise(buffer, ccnGenerateNoiseSeed(seed, x, y), totalWidth, totalHeight);
 	}
+	else {
+		*buffer = malloc(sizeof(float)*totalSize);
 
-	// Generate horizontal noises
-	if(positiveOffset.x > 0) {
-		if(tileFlags & CCN_FLAG_TILE_HORIZONTAL) {
-			ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y), width, height);
+		// Generate central noise
+		ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y), width, height);
 
-			for(Y = 0; Y < height; Y++) {
-				(*buffer)[totalWidth - 1 + totalWidth * (Y + negativeOffset.y)] = whiteNoiseBuffer[Y * width];
+		for(Y = 0; Y < height; Y++) {
+			for(X = 0; X < width; X++) {
+				(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
 			}
 		}
-		else {
-			for(Y = 0; Y < height; Y++) {
-				(*buffer)[totalWidth - 1 + totalWidth * (Y + negativeOffset.y)] = (*buffer)[negativeOffset.x + totalWidth * (Y + negativeOffset.y)];
+		
+		// Generate horizontal noises
+
+		// Positive
+		if(positiveOffset.x > 0) {
+			if(tileConfig->xPeriod == 1) {
+				for(Y = 0; Y < height; Y++) {
+					for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
+						(*buffer)[totalWidth - positiveOffset.x + totalWidth * (Y + negativeOffset.y) + X] = (*buffer)[negativeOffset.x + totalWidth * (Y + negativeOffset.y) + X];
+					}
+				}
+			}
+			else {
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y), width, height);
+
+				for(Y = 0; Y < height; Y++) {
+					for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
+						(*buffer)[totalWidth - positiveOffset.x + totalWidth * (Y + negativeOffset.y) + X] = whiteNoiseBuffer[Y * width + X];
+					}
+				}
 			}
 		}
+
+		// Negative
+		if(negativeOffset.x > 0) {
+			if(tileConfig->xPeriod == 1) {
+				for(Y = 0; Y < height; Y++) {
+					for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
+						(*buffer)[(Y + negativeOffset.y) * totalWidth + X] = (*buffer)[width + X + (Y + negativeOffset.y) * totalWidth];
+					}
+				}
+			}
+			else {
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y), width, height);
+
+				for(Y = 0; Y < height; Y++) {
+					for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
+						(*buffer)[(Y + negativeOffset.y) * totalWidth + X] = whiteNoiseBuffer[width - negativeOffset.x + X + Y * width];
+					}
+				}
+			}
+		}
+
+		// Generate right bottom noise
+
+		// Generate bottom noise
+
+		// Generate left bottom noise
+
+		// Generate left noise
+
+		// Generate left top noise
+
+		// Generate top noise
+
+		// Generate right top noise
+
+		free(whiteNoiseBuffer);
 	}
-
-	// Generate right bottom noise
-
-	// Generate bottom noise
-
-	// Generate left bottom noise
-
-	// Generate left noise
-
-	// Generate left top noise
-
-	// Generate top noise
-
-	// Generate right top noise
-
-	free(whiteNoiseBuffer);
 }
 
 unsigned int ccnCoordinateUid(int x, int y)
@@ -139,9 +167,9 @@ int ccnGenerateWorleyNoise(
 	unsigned int i, j;
 	unsigned int pointId = 0;
 	unsigned int pointListSize = points * 9;
-	ccnPoint offset;
+	ccPoint offset;
 
-	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
+	ccPoint *pointList = malloc(pointListSize*sizeof(ccPoint));
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
@@ -165,7 +193,7 @@ int ccnGenerateWorleyNoise(
 	}
 
 	for(i = 0; i < size; i++) {
-		ccnPoint p;
+		ccPoint p;
 		p.y = i / width;
 		p.x = i - p.y * width;
 
@@ -244,8 +272,8 @@ int ccnGenerateValueNoise(
 	
 	float influence = 0.5f;
 
-	ccnPoint negativeOffset;
-	ccnPoint positiveOffset;
+	ccPoint negativeOffset;
+	ccPoint positiveOffset;
 
 	if(interpolationMethod == CCN_INTERP_CUBIC) {
 		negativeOffset.x = 1;
