@@ -60,7 +60,6 @@ static void ccnGenerateOffsetNoise(
 
 	float *whiteNoiseBuffer;
 
-	// If not tiling
 	if(tileConfig->tileMethod == CCN_TILE_NOT) {
 		ccnGenerateWhiteNoise(buffer, ccnGenerateNoiseSeed(seed, x, y), totalWidth, totalHeight);
 	}
@@ -118,19 +117,47 @@ static void ccnGenerateOffsetNoise(
 			}
 		}
 
-		// Generate right bottom noise
+		// Generate vertical noises
 
-		// Generate bottom noise
+		// Positive
+		if(positiveOffset.y > 0) {
+			if(tileConfig->yPeriod == 1) {
+				for(X = 0; X < width; X++) {
+					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
+						(*buffer)[negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
+					}
+				}
+			}
+			else {
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y + 1), width, height);
 
-		// Generate left bottom noise
+				for(X = 0; X < width; X++) {
+					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
+						(*buffer)[negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = whiteNoiseBuffer[X + width * Y];
+					}
+				}
+			}
+		}
 
-		// Generate left noise
+		// Negative
+		if(negativeOffset.y > 0) {
+			if(tileConfig->yPeriod == 1) {
+				for(X = 0; X < width; X++) {
+					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
+						(*buffer)[negativeOffset.x + X + totalWidth * Y] = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
+					}
+				}
+			}
+			else {
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y - 1), width, height);
 
-		// Generate left top noise
-
-		// Generate top noise
-
-		// Generate right top noise
+				for(X = 0; X < width; X++) {
+					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
+						(*buffer)[negativeOffset.x + X + totalWidth * Y] = whiteNoiseBuffer[width * (height - negativeOffset.y + Y) + X];
+					}
+				}
+			}
+		}
 
 		free(whiteNoiseBuffer);
 	}
