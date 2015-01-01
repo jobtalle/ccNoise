@@ -164,7 +164,11 @@ static void ccnGenerateOffsetNoise(
 		// Right bottom
 		if(positiveOffset.x > 0 && positiveOffset.y > 0) {
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
-
+				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
+					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
+						(*buffer)[width + negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = (*buffer)[negativeOffset.x + X + (negativeOffset.y + Y) * totalWidth];
+					}
+				}
 			}
 			else {
 				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y + 1), width, positiveOffset.y);
@@ -180,7 +184,11 @@ static void ccnGenerateOffsetNoise(
 		// Left bottom
 		if(negativeOffset.x > 0 && positiveOffset.y > 0) {
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
-
+				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
+					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
+						(*buffer)[X + totalWidth * (negativeOffset.y + height + Y)] = (*buffer)[width + X + totalWidth * (negativeOffset.y + Y)];
+					}
+				}
 			}
 			else {
 				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y + 1), width, positiveOffset.y);
@@ -196,7 +204,11 @@ static void ccnGenerateOffsetNoise(
 		// Left top
 		if(negativeOffset.x > 0 && negativeOffset.y > 0) {
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
-
+				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
+					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
+						(*buffer)[X + totalWidth * Y] = (*buffer)[width + X + totalWidth * (height + Y)];
+					}
+				}
 			}
 			else {
 				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y - 1), width, height);
@@ -212,7 +224,11 @@ static void ccnGenerateOffsetNoise(
 		// Right top
 		if(positiveOffset.x > 0 && negativeOffset.y > 0) {
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
-
+				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
+					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
+						(*buffer)[negativeOffset.x + width + X + totalWidth * Y] = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
+					}
+				}
 			}
 			else {
 				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y - 1), width, height);
