@@ -79,10 +79,13 @@ static void ccnGenerateOffsetNoise(
 
 		// Positive
 		if(positiveOffset.x > 0) {
+
+#define CCN_BUFFERDEST (*buffer)[-positiveOffset.x + X + totalWidth * (negativeOffset.y + Y + 1)]
+
 			if(tileConfig->xPeriod == 1) {
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
-						(*buffer)[totalWidth - positiveOffset.x + totalWidth * (Y + negativeOffset.y) + X] = (*buffer)[negativeOffset.x + totalWidth * (Y + negativeOffset.y) + X];
+						CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
 					}
 				}
 			}
@@ -91,7 +94,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
-						(*buffer)[totalWidth - positiveOffset.x + totalWidth * (Y + negativeOffset.y) + X] = whiteNoiseBuffer[Y * width + X];
+						CCN_BUFFERDEST = whiteNoiseBuffer[X + Y * width];
 					}
 				}
 			}
@@ -99,10 +102,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Negative
 		if(negativeOffset.x > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[X + totalWidth * (negativeOffset.y + Y)]
+
 			if(tileConfig->xPeriod == 1) {
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
-						(*buffer)[(Y + negativeOffset.y) * totalWidth + X] = (*buffer)[width + X + (Y + negativeOffset.y) * totalWidth];
+						CCN_BUFFERDEST = (*buffer)[width + X + totalWidth * (Y + negativeOffset.y)];
 					}
 				}
 			}
@@ -111,7 +118,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
-						(*buffer)[(Y + negativeOffset.y) * totalWidth + X] = whiteNoiseBuffer[width - negativeOffset.x + X + Y * width];
+						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
 			}
@@ -121,10 +128,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Positive
 		if(positiveOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)]
+
 			if(tileConfig->yPeriod == 1) {
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
+						CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
 					}
 				}
 			}
@@ -133,7 +144,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = whiteNoiseBuffer[X + width * Y];
+						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
 			}
@@ -141,10 +152,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Negative
 		if(negativeOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[negativeOffset.x + X + totalWidth * Y]
+
 			if(tileConfig->yPeriod == 1) {
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + X + totalWidth * Y] = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
+						CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
 					}
 				}
 			}
@@ -153,7 +168,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + X + totalWidth * Y] = whiteNoiseBuffer[width * (height - negativeOffset.y + Y) + X];
+						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
 			}
@@ -163,10 +178,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Right bottom
 		if(positiveOffset.x > 0 && positiveOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[width + negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)]
+
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[width + negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = (*buffer)[negativeOffset.x + X + (negativeOffset.y + Y) * totalWidth];
+						CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
 					}
 				}
 			}
@@ -175,7 +194,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[width + negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)] = whiteNoiseBuffer[width * Y + X];
+						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
 			}
@@ -183,10 +202,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Left bottom
 		if(negativeOffset.x > 0 && positiveOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[X + totalWidth * (height + negativeOffset.y + Y)]
+
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[X + totalWidth * (negativeOffset.y + height + Y)] = (*buffer)[width + X + totalWidth * (negativeOffset.y + Y)];
+						CCN_BUFFERDEST = (*buffer)[width + X + totalWidth * (negativeOffset.y + Y)];
 					}
 				}
 			}
@@ -195,7 +218,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
-						(*buffer)[X + totalWidth * (negativeOffset.y + height + Y)] = whiteNoiseBuffer[(Y + 1) * width - negativeOffset.x + X];
+						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
 			}
@@ -203,10 +226,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Left top
 		if(negativeOffset.x > 0 && negativeOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[X + totalWidth * Y]
+
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[X + totalWidth * Y] = (*buffer)[width + X + totalWidth * (height + Y)];
+						CCN_BUFFERDEST = (*buffer)[width + X + totalWidth * (height + Y)];
 					}
 				}
 			}
@@ -215,7 +242,7 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[X + totalWidth * Y] = whiteNoiseBuffer[(height - negativeOffset.y + Y + 1) * width - negativeOffset.x + X];
+						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (height - negativeOffset.y + Y + 1)];
 					}
 				}
 			}
@@ -223,10 +250,14 @@ static void ccnGenerateOffsetNoise(
 
 		// Right top
 		if(positiveOffset.x > 0 && negativeOffset.y > 0) {
+
+#undef CCN_BUFFERDEST
+#define CCN_BUFFERDEST (*buffer)[width + negativeOffset.x + X + totalWidth * Y]
+
 			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + width + X + totalWidth * Y] = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
+						CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
 					}
 				}
 			}
@@ -235,11 +266,13 @@ static void ccnGenerateOffsetNoise(
 
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
-						(*buffer)[negativeOffset.x + width + X + totalWidth * Y] = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
+						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
 			}
 		}
+
+#undef CCN_BUFFERDEST
 
 		free(whiteNoiseBuffer);
 	}
@@ -385,16 +418,12 @@ int ccnGenerateValueNoise(
 	ccPoint positiveOffset;
 
 	if(interpolationMethod == CCN_INTERP_CUBIC) {
-		negativeOffset.x = 1;
-		negativeOffset.y = 1;
-		positiveOffset.x = 2;
-		positiveOffset.y = 2;
+		negativeOffset.x = negativeOffset.y = 1;
+		positiveOffset.x = positiveOffset.y = 2;
 	}
 	else {
-		negativeOffset.x = 0;
-		negativeOffset.y = 0;
-		positiveOffset.x = 1;
-		positiveOffset.y = 1;
+		negativeOffset.x = negativeOffset.y = 0;
+		positiveOffset.x = positiveOffset.y = 1;
 	}
 
 	octaveSize = maxOctave;

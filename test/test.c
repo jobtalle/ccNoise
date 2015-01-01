@@ -29,11 +29,11 @@ static void generate(int left, int top)
 	cnnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
-	tileConfig.xPeriod = 1;
-	tileConfig.yPeriod = 1;
+	tileConfig.xPeriod = 2;
+	tileConfig.yPeriod = 2;
 
 	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?0:0, top?0:0, WIDTH, HEIGHT, 2, 64, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 1, 64, CCN_INTERP_CUBIC);
 	//ccnGenerateWhiteNoise(&noise, seed, WIDTH, HEIGHT);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
@@ -139,6 +139,14 @@ int main(int argc, char **argv)
 					break;
 				case CC_KEY_4:
 					printf("Rendering worley noise...\n");
+					generateRightBottom();
+					printf("done.\n");
+					break;
+				case CC_KEY_5:
+					printf("Rendering all...\n");
+					generateLeftTop();
+					generateRightTop();
+					generateLeftBottom();
 					generateRightBottom();
 					printf("done.\n");
 					break;
