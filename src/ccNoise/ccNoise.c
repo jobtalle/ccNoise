@@ -44,6 +44,24 @@ static unsigned int ccnGenerateNoiseSeed(unsigned int seed, int x, int y)
 	return seed + ccnCoordinateUid(x, y);
 }
 
+static int ccnWrapCoordinate(int coordinate, unsigned int period) {
+	int positiveDeviation, negativeDeviation;
+
+	if(period == CCN_INFINITE) return coordinate;
+
+	positiveDeviation = period >> 1;
+	negativeDeviation = -(int)(period - positiveDeviation);
+
+	if(coordinate > positiveDeviation) {
+		coordinate -= ((coordinate - negativeDeviation - 1) / period) * period;
+	}
+	else if(coordinate <= negativeDeviation) {
+		coordinate += ((-coordinate + positiveDeviation) / period) * period;
+	}
+
+	return coordinate;
+}
+
 static void ccnGenerateOffsetNoise(
 	float **buffer,
 	unsigned int seed,
@@ -67,7 +85,7 @@ static void ccnGenerateOffsetNoise(
 		*buffer = malloc(sizeof(float)*totalSize);
 
 		// Generate central noise
-		ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y), width, height);
+		ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x, tileConfig->xPeriod), ccnWrapCoordinate(y, tileConfig->yPeriod)), width, height);
 
 		for(Y = 0; Y < height; Y++) {
 			for(X = 0; X < width; X++) {
@@ -90,7 +108,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y), width, height);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x + 1, tileConfig->xPeriod), ccnWrapCoordinate(y, tileConfig->yPeriod)), width, height);
 
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
@@ -114,7 +132,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y), width, height);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x - 1, tileConfig->xPeriod), ccnWrapCoordinate(y, tileConfig->yPeriod)), width, height);
 
 				for(Y = 0; Y < height; Y++) {
 					for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
@@ -140,7 +158,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y + 1), width, positiveOffset.y);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x, tileConfig->xPeriod), ccnWrapCoordinate(y + 1, tileConfig->yPeriod)), width, positiveOffset.y);
 
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
@@ -164,7 +182,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x, y - 1), width, height);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x, tileConfig->xPeriod), ccnWrapCoordinate(y - 1, tileConfig->yPeriod)), width, height);
 
 				for(X = 0; X < width; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
@@ -190,7 +208,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y + 1), width, positiveOffset.y);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x + 1, tileConfig->xPeriod), ccnWrapCoordinate(y + 1, tileConfig->yPeriod)), width, positiveOffset.y);
 
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
@@ -214,7 +232,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y + 1), width, positiveOffset.y);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x - 1, tileConfig->xPeriod), ccnWrapCoordinate(y + 1, tileConfig->yPeriod)), width, positiveOffset.y);
 
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
@@ -238,7 +256,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x - 1, y - 1), width, height);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x - 1, tileConfig->xPeriod), ccnWrapCoordinate(y - 1, tileConfig->yPeriod)), width, height);
 
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
@@ -262,7 +280,7 @@ static void ccnGenerateOffsetNoise(
 				}
 			}
 			else {
-				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, x + 1, y - 1), width, height);
+				ccnGenerateWhiteNoise(&whiteNoiseBuffer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x + 1, tileConfig->xPeriod), ccnWrapCoordinate(y - 1, tileConfig->yPeriod)), width, height);
 
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {

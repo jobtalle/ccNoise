@@ -29,7 +29,7 @@ static void generate(int left, int top)
 	cnnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
-	tileConfig.xPeriod = 2;
+	tileConfig.xPeriod = 1;
 	tileConfig.yPeriod = 2;
 
 	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
