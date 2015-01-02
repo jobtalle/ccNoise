@@ -92,6 +92,8 @@ static void ccnGenerateOffsetNoise(
 				(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
 			}
 		}
+
+		free(whiteNoiseBuffer);
 		
 		// Generate horizontal noises
 
@@ -115,6 +117,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[X + Y * width];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -139,6 +143,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -165,6 +171,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -189,6 +197,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -215,6 +225,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -239,6 +251,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -263,6 +277,8 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (height - negativeOffset.y + Y + 1)];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -287,12 +303,12 @@ static void ccnGenerateOffsetNoise(
 						CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
+
+				free(whiteNoiseBuffer);
 			}
 		}
 
 #undef CCN_BUFFERDEST
-
-		free(whiteNoiseBuffer);
 	}
 }
 
@@ -504,6 +520,7 @@ int ccnGenerateValueNoise(
 		}
 		
 		free(xValues);
+		free(offsetNoise);
 
 		influence *= 0.5f;
 
