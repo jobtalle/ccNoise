@@ -1,7 +1,3 @@
-#define CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-
 #include <stdio.h>
 
 #include <ccore/display.h>
@@ -30,14 +26,14 @@ static void generate(int left, int top)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
 	float *noise = NULL;
-	cnnTileConfiguration tileConfig;
+	ccnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
 	tileConfig.xPeriod = 2;
-	tileConfig.yPeriod = 2;
+	tileConfig.yPeriod = 1;
 
-	//ccnGenerateWorleyNoise(&noise, seed, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 3, 64, CCN_INTERP_CUBIC);
+	ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 70, 0, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 3, 64, CCN_INTERP_CUBIC);
 	//ccnGenerateWhiteNoise(&noise, seed, WIDTH, HEIGHT);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
@@ -199,9 +195,6 @@ int main(int argc, char **argv)
 	}
 
 	ccFree();
-
-	void *e = malloc(42);
-	_CrtDumpMemoryLeaks();
 
 	return 0;
 }

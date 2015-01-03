@@ -67,7 +67,7 @@ typedef struct {
 		left,
 		leftTop;
 	} customNeighbors;
-} cnnTileConfiguration;
+} ccnTileConfiguration;
 
 // Create an unique as possible ID for a coordinate
 unsigned int ccnCoordinateUid(int x, int y);
@@ -76,6 +76,7 @@ unsigned int ccnCoordinateUid(int x, int y);
 int ccnGenerateWorleyNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
+	ccnTileConfiguration *tileConfig,            // Tile configuration
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
 	unsigned int points,                         // The number of points per noise
@@ -95,7 +96,7 @@ int ccnGenerateWhiteNoise(
 int ccnGenerateValueNoise(
 	float **buffer,                              // The buffer to store the generated values in
 	unsigned int seed,                           // The random seed
-	cnnTileConfiguration *tileConfig,             // Make noise tileable, costs some overhead
+	ccnTileConfiguration *tileConfig,            // Tile configuration
 	int x, int y,                                // Adjecent coordinates will tile seamlessly
 	unsigned int width, unsigned int height,     // Noise dimensions
 	unsigned int octaves,                        // The number of times to add noises to the noise, CCN_INFINITE for max detail

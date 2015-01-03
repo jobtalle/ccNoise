@@ -65,7 +65,7 @@ static int ccnWrapCoordinate(int coordinate, unsigned int period) {
 static void ccnGenerateOffsetNoise(
 	float **buffer,
 	unsigned int seed,
-	cnnTileConfiguration *tileConfig,
+	ccnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	ccPoint negativeOffset, ccPoint positiveOffset)
@@ -328,6 +328,7 @@ unsigned int ccnCoordinateUid(int x, int y)
 int ccnGenerateWorleyNoise(
 	float **buffer,
 	unsigned int seed,
+	ccnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	unsigned int points,
@@ -350,13 +351,15 @@ int ccnGenerateWorleyNoise(
 
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 
+	if(tileConfig->tileMethod = CCN_TILE_NOT) tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
+
 	*buffer = malloc(sizeof(float)*size);
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
 			ccRandomizer32 randomizer;
 
-			ccrSeed32(&randomizer, ccnGenerateNoiseSeed(seed, x + offset.x, y + offset.y));
+			ccrSeed32(&randomizer, ccnGenerateNoiseSeed(seed, ccnWrapCoordinate(x + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(y + offset.y, tileConfig->yPeriod)));
 
 			for(i = 0; i < points; i++) {
 				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
@@ -433,7 +436,7 @@ int ccnGenerateWhiteNoise(
 int ccnGenerateValueNoise(
 	float **buffer,
 	unsigned int seed,
-	cnnTileConfiguration *tileConfig,
+	ccnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
 	unsigned int octaves,
