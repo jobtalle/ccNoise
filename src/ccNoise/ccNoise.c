@@ -74,7 +74,7 @@ static void ccnGenerateOffsetNoise(
 
 	unsigned int totalWidth = width + negativeOffset.x + positiveOffset.x;
 	unsigned int totalHeight = height + negativeOffset.y + positiveOffset.y;
-	unsigned int totalSize = totalWidth * totalHeight;
+	unsigned int totalSize;
 
 	if(tileConfig->tileMethod == CCN_TILE_NOT) {
 		ccnGenerateWhiteNoise(buffer, ccnGenerateNoiseSeed(seed, x, y), totalWidth, totalHeight);
@@ -82,6 +82,8 @@ static void ccnGenerateOffsetNoise(
 	else {
 		float *whiteNoiseBuffer;
 		bool wrapCorners = tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1;
+
+		totalSize = totalWidth * totalHeight;
 
 		*buffer = malloc(sizeof(float)*totalSize);
 
