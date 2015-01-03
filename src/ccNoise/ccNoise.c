@@ -79,7 +79,7 @@ static void ccnGenerateOffsetNoise(
 		ccnGenerateWhiteNoise(buffer, ccnGenerateNoiseSeed(seed, x, y), totalWidth, totalHeight);
 	}
 	else {
-		float *whiteNoiseBuffer;
+		float *whiteNoiseBuffer = malloc(sizeof(float) * totalWidth * totalHeight);
 		bool wrapCorners = tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1;
 
 		*buffer = malloc(sizeof(float)*totalWidth * totalHeight);
@@ -92,8 +92,6 @@ static void ccnGenerateOffsetNoise(
 				(*buffer)[(Y + negativeOffset.y) * totalWidth + X + negativeOffset.x] = whiteNoiseBuffer[(Y * width) + X];
 			}
 		}
-
-		free(whiteNoiseBuffer);
 		
 		// Generate horizontal noises
 
@@ -117,8 +115,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[X + Y * width];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -143,8 +139,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -171,8 +165,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -197,8 +189,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -225,8 +215,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[X + width * Y];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -251,8 +239,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (Y + 1)];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -277,8 +263,6 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[-negativeOffset.x + X + width * (height - negativeOffset.y + Y + 1)];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
 
@@ -303,10 +287,10 @@ static void ccnGenerateOffsetNoise(
 						_CCN_BUFFERDEST = whiteNoiseBuffer[X + width * (height - negativeOffset.y + Y)];
 					}
 				}
-
-				free(whiteNoiseBuffer);
 			}
 		}
+
+		free(whiteNoiseBuffer);
 	}
 }
 
@@ -352,8 +336,6 @@ int ccnGenerateWorleyNoise(
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 
 	if(tileConfig->tileMethod = CCN_TILE_NOT) tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
-
-	*buffer = malloc(sizeof(float)*size);
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
@@ -424,8 +406,6 @@ int ccnGenerateWhiteNoise(
 
 	ccrSeed32(&randomizer, seed);
 
-	*buffer = malloc(size * sizeof(float));
-
 	for(i = 0; i < size; i++) {
 		(*buffer)[i] = ccrGenerateFloat32(&randomizer);
 	}
@@ -463,7 +443,9 @@ int ccnGenerateValueNoise(
 
 	octaveSize = maxOctave;
 
-	*buffer = calloc(size, sizeof(float));
+	for(i = 0; i < size; i++) {
+		(*buffer)[i] = 0;
+	}
 
 	for(i = 0; i < octaves; i++) {
 		unsigned int xSteps = width / octaveSize;
