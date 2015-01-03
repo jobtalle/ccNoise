@@ -76,12 +76,13 @@ static void ccnGenerateOffsetNoise(
 	unsigned int totalHeight = height + negativeOffset.y + positiveOffset.y;
 	unsigned int totalSize = totalWidth * totalHeight;
 
-	float *whiteNoiseBuffer;
-
 	if(tileConfig->tileMethod == CCN_TILE_NOT) {
 		ccnGenerateWhiteNoise(buffer, ccnGenerateNoiseSeed(seed, x, y), totalWidth, totalHeight);
 	}
 	else {
+		float *whiteNoiseBuffer;
+		bool wrapCorners = tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1;
+
 		*buffer = malloc(sizeof(float)*totalSize);
 
 		// Generate central noise
@@ -210,7 +211,7 @@ static void ccnGenerateOffsetNoise(
 #undef _CCN_BUFFERDEST
 #define _CCN_BUFFERDEST (*buffer)[width + negativeOffset.x + X + totalWidth * (height + negativeOffset.y + Y)]
 
-			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
+			if(wrapCorners) {
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
 						_CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (negativeOffset.y + Y)];
@@ -236,7 +237,7 @@ static void ccnGenerateOffsetNoise(
 #undef _CCN_BUFFERDEST
 #define _CCN_BUFFERDEST (*buffer)[X + totalWidth * (height + negativeOffset.y + Y)]
 
-			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
+			if(wrapCorners) {
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)positiveOffset.y; Y++) {
 						_CCN_BUFFERDEST = (*buffer)[width + X + totalWidth * (negativeOffset.y + Y)];
@@ -262,7 +263,7 @@ static void ccnGenerateOffsetNoise(
 #undef _CCN_BUFFERDEST
 #define _CCN_BUFFERDEST (*buffer)[X + totalWidth * Y]
 
-			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
+			if(wrapCorners) {
 				for(X = 0; X < (unsigned int)negativeOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
 						_CCN_BUFFERDEST = (*buffer)[width + X + totalWidth * (height + Y)];
@@ -288,7 +289,7 @@ static void ccnGenerateOffsetNoise(
 #undef _CCN_BUFFERDEST
 #define _CCN_BUFFERDEST (*buffer)[width + negativeOffset.x + X + totalWidth * Y]
 
-			if(tileConfig->xPeriod == 1 && tileConfig->yPeriod == 1) {
+			if(wrapCorners) {
 				for(X = 0; X < (unsigned int)positiveOffset.x; X++) {
 					for(Y = 0; Y < (unsigned int)negativeOffset.y; Y++) {
 						_CCN_BUFFERDEST = (*buffer)[negativeOffset.x + X + totalWidth * (height + Y)];
