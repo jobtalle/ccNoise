@@ -69,9 +69,6 @@ typedef struct {
 	} customNeighbors;
 } ccnTileConfiguration;
 
-// Create an unique as possible ID for a coordinate
-unsigned int ccnCoordinateUid(int x, int y);
-
 // Create worley noise
 int ccnGenerateWorleyNoise(
 	float **buffer,                              // The buffer to store the generated values in

@@ -57,21 +57,6 @@ static int ccnWrapCoordinate(int coordinate, unsigned int period) {
 	return coordinate;
 }
 
-unsigned int ccnCoordinateUid(int x, int y)
-{
-	unsigned int shell = max(abs(x), abs(y));
-	unsigned int uid = (x + y + (shell << 1)) << 1;
-	
-	if(shell != 0) {
-		uid += ccTriSquared((shell << 1) - 1);
-		if(x > y || (x == shell && y == shell)) {
-			uid--;
-		}
-	}
-
-	return uid;
-}
-
 int ccnGenerateWorleyNoise(
 	float **buffer,
 	unsigned int seed,
