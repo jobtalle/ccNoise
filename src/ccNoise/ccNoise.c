@@ -195,6 +195,7 @@ int ccnGenerateValueNoise(
 	ccPoint negativeOffset;
 	ccPoint positiveOffset;
 
+	// TODO: inline the following
 	if(interpolationMethod == CCN_INTERP_CUBIC) {
 		negativeOffset.x = negativeOffset.y = 1;
 		positiveOffset.x = positiveOffset.y = 2;
@@ -211,9 +212,15 @@ int ccnGenerateValueNoise(
 	}
 
 	for(i = 0; i < octaves; i++) {
-		unsigned int offsetHeight = (height / octaveSize) + negativeOffset.y + positiveOffset.y;
+		unsigned int octaveWidth = width / octaveSize;
+		unsigned int octaveHeight = height / octaveSize;
+		unsigned int offsetHeight = octaveHeight + negativeOffset.y + positiveOffset.y;
+		ccPoint offset;
 
 		float *xValues = malloc(width * offsetHeight * sizeof(float));
+
+		offset.x = tileConfig->xPeriod * octaveWidth;
+		offset.y = tileConfig->yPeriod * octaveHeight;
 
 		for(j = 0; j < offsetHeight; j++) {
 			for(k = 0; k < width; k++) {
@@ -227,7 +234,7 @@ int ccnGenerateValueNoise(
 					if(factor == 0) {
 						if(k == 0) {
 							for(l = 0; l < 4; l++) {
-								bufferedValues[l] = ccrGenerateFloatCoordinate(seed, octX - 1 + l, j);
+								bufferedValues[l] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX - 1 + l + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 							}
 						}
 						else {
@@ -235,7 +242,7 @@ int ccnGenerateValueNoise(
 								bufferedValues[l] = bufferedValues[l + 1];
 							}
 
-							bufferedValues[3] = ccrGenerateFloatCoordinate(seed, octX + 2, j);
+							bufferedValues[3] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 2 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 						}
 
 						xValues[j * width + k] = bufferedValues[1];
@@ -249,13 +256,13 @@ int ccnGenerateValueNoise(
 
 					if(factor == 0) {
 						if(k == 0) {
-							bufferedValues[0] = ccrGenerateFloatCoordinate(seed, octX, j);
+							bufferedValues[0] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 						}
 						else {
 							bufferedValues[0] = bufferedValues[1];
 						}
 
-						bufferedValues[1] = ccrGenerateFloatCoordinate(seed, octX + 1, j);
+						bufferedValues[1] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 1 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 
 						xValues[j * width + k] = bufferedValues[0];
 					}
@@ -268,13 +275,10 @@ int ccnGenerateValueNoise(
 
 		for(j = 0; j < size; j++) {
 			unsigned int Y = j / width;
-			unsigned int X = j - Y * width;
-
-			unsigned octY = Y / octaveSize;
+			unsigned int octY = Y / octaveSize;
+			unsigned int index = (j - Y * width) + (octY + negativeOffset.y) * width;
 
 			float factor = (float)(Y - octY * octaveSize) / octaveSize;
-
-			unsigned int index = X + (octY + negativeOffset.y) * width;
 
 			if(factor == 0) {
 				(*buffer)[j] += xValues[index] * influence;
