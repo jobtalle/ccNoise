@@ -189,6 +189,7 @@ int ccnGenerateValueNoise(
 	unsigned int size = width * height;
 	unsigned int octaveSize = maxOctave;
 	unsigned int i, j, k;
+	int l;
 	
 	float influence = 0.5f;
 
@@ -221,19 +222,49 @@ int ccnGenerateValueNoise(
 		for(j = 0; j < offsetHeight; j++) {
 			for(k = 0; k < width; k++) {
 				unsigned int octX = k / octaveSize;
-				unsigned int offsetIndex = j * offsetWidth + negativeOffset.x + octX;
 
 				float factor = (float)(k - octX * octaveSize) / octaveSize;
 
-				if(factor == 0) {
-					xValues[j * width + k] = ccrGenerateFloatCoordinate(seed, octX, j);
-				}
-				else {
-					if(interpolationMethod == CCN_INTERP_CUBIC) {
-						xValues[j * width + k] = ccTriInterpolateCubic(ccrGenerateFloatCoordinate(seed, octX - 1, j), ccrGenerateFloatCoordinate(seed, octX, j), ccrGenerateFloatCoordinate(seed, octX + 1, j), ccrGenerateFloatCoordinate(seed, octX + 2, j), factor);
+				if(interpolationMethod == CCN_INTERP_CUBIC) {
+					float bufferedValues[4];
+
+					if(factor == 0) {
+						if(k == 0) {
+							for(l = 0; l < 4; l++) {
+								bufferedValues[l] = ccrGenerateFloatCoordinate(seed, octX - 1 + l, j);
+							}
+						}
+						else {
+							for(l = 0; l < 3; l++) {
+								bufferedValues[l] = bufferedValues[l + 1];
+							}
+
+							bufferedValues[3] = ccrGenerateFloatCoordinate(seed, octX + 2, j);
+						}
+
+						xValues[j * width + k] = bufferedValues[1];
 					}
 					else {
-						xValues[j * width + k] = ccnInterpolate(ccrGenerateFloatCoordinate(seed, octX, j), ccrGenerateFloatCoordinate(seed, octX + 1, j), factor, interpolationMethod);
+						xValues[j * width + k] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
+					}
+				}
+				else {
+					float bufferedValues[2];
+
+					if(factor == 0) {
+						if(k == 0) {
+							bufferedValues[0] = ccrGenerateFloatCoordinate(seed, octX, j);
+						}
+						else {
+							bufferedValues[0] = bufferedValues[1];
+						}
+
+						bufferedValues[1] = ccrGenerateFloatCoordinate(seed, octX + 1, j);
+
+						xValues[j * width + k] = bufferedValues[0];
+					}
+					else {
+						xValues[j * width + k] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
 					}
 				}
 			}
