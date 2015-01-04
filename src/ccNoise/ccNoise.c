@@ -283,6 +283,7 @@ int ccnGenerateValueNoise(
 		influence *= 0.5f;
 
 		octaveSize >>= 1;
+		seed++;
 		if(octaveSize == 0) {
 			if(octaves == CCN_INFINITE) {
 				break;
