@@ -188,8 +188,7 @@ int ccnGenerateValueNoise(
 {
 	unsigned int size = width * height;
 	unsigned int octaveSize = maxOctave;
-	unsigned int i, j, k;
-	int l;
+	unsigned int i, j, k, l;
 	
 	float influence = 0.5f;
 
@@ -212,10 +211,7 @@ int ccnGenerateValueNoise(
 	}
 
 	for(i = 0; i < octaves; i++) {
-		unsigned int xSteps = width / octaveSize;
-		unsigned int ySteps = height / octaveSize;
-		unsigned int offsetWidth = xSteps + negativeOffset.x + positiveOffset.x;
-		unsigned int offsetHeight = ySteps + negativeOffset.y + positiveOffset.y;
+		unsigned int offsetHeight = (height / octaveSize) + negativeOffset.y + positiveOffset.y;
 
 		float *xValues = malloc(width * offsetHeight * sizeof(float));
 
