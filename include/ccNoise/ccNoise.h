@@ -55,7 +55,8 @@ typedef enum {
 	CCN_STORE_SET,
 	CCN_STORE_ADD,
 	CCN_STORE_SUBTRACT,
-	CCN_STORE_MULTIPLY
+	CCN_STORE_MULTIPLY,
+	CCN_STORE_DIVIDE
 } ccnStoreMethod;
 
 typedef struct {

@@ -57,6 +57,27 @@ static int ccnWrapCoordinate(int coordinate, unsigned int period) {
 	return coordinate;
 }
 
+static void ccnStore(float *buffer, ccnStoreMethod method, float value)
+{
+	switch(method) {
+	case CCN_STORE_SET:
+		*buffer = value;
+		break;
+	case CCN_STORE_ADD:
+		*buffer += value;
+		break;
+	case CCN_STORE_SUBTRACT:
+		*buffer -= value;
+		break;
+	case CCN_STORE_MULTIPLY:
+		*buffer *= value;
+		break;
+	case CCN_STORE_DIVIDE:
+		*buffer /= value;
+		break;
+	}
+}
+
 int ccnGenerateWorleyNoise(
 	float **buffer,
 	unsigned int seed,
@@ -125,17 +146,14 @@ int ccnGenerateWorleyNoise(
 
 		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
 		
-		if(pointId <= n) {
-			(*buffer)[i] = highValue;
-		}
-		else if(pointsDistances[n] > high) {
-			(*buffer)[i] = highValue;
+		if(pointId <= n || pointsDistances[n] > high) {
+			ccnStore(*buffer + i, storeMethod, highValue);
 		}
 		else if(pointsDistances[n] < low) {
-			(*buffer)[i] = lowValue;
+			ccnStore(*buffer + i, storeMethod, lowValue);
 		}
 		else {
-			(*buffer)[i] = ccnInterpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod);
+			ccnStore(*buffer + i, storeMethod, ccnInterpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
 		}
 	}
 
@@ -161,7 +179,7 @@ int ccnGenerateWhiteNoise(
 	ccrSeed32(&randomizer, seed);
 
 	for(i = 0; i < size; i++) {
-		(*buffer)[i] = ccrGenerateFloat32(&randomizer) * multiplier + range.low;
+		ccnStore(*buffer + i, storeMethod, ccrGenerateFloat32(&randomizer) * multiplier + range.low);
 	}
 
 	return CCN_ERROR_NONE;
@@ -270,14 +288,14 @@ int ccnGenerateValueNoise(
 		float factor = (float)(Y - octY * scale) / scale;
 
 		if(factor == 0) {
-			(*buffer)[j] += xValues[index] * multiplier + range.low;
+			ccnStore(*buffer + j, storeMethod, xValues[index] * multiplier + range.low);
 		}
 		else {
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
-				(*buffer)[j] += ccTriInterpolateCubic(xValues[index - width], xValues[index], xValues[index + width], xValues[index + (width << 1)], factor) * multiplier + range.low;
+				ccnStore(*buffer + j, storeMethod, ccTriInterpolateCubic(xValues[index - width], xValues[index], xValues[index + width], xValues[index + (width << 1)], factor) * multiplier + range.low);
 			}
 			else {
-				(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * multiplier + range.low;
+				ccnStore(*buffer + j, storeMethod, ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * multiplier + range.low);
 			}
 		}
 	}

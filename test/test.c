@@ -32,8 +32,8 @@ static void generate(int left, int top)
 	tileConfig.xPeriod = 2;
 	tileConfig.yPeriod = 2;
 
-	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 30, 1, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.25f, 0.75f }, 64, CCN_INTERP_CUBIC);
+	ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 1.0f }, 30, 1, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.25f, 0.75f }, 64, CCN_INTERP_CUBIC);
 	//ccnGenerateWhiteNoise(&noise, seed, WIDTH, HEIGHT);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
