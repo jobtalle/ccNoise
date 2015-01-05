@@ -81,7 +81,6 @@ int ccnGenerateWorleyNoise(
 	unsigned int points,                         // The number of points per noise
 	unsigned int n,                              // Worley noise interpolates to the n-th closest point
 	int low, int high,                           // Interpolation occurs between the lowest and highest distance
-	float lowValue, float highValue,             // Minimum and maximum value of the noise
 	ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 

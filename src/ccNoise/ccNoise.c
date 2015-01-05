@@ -90,7 +90,6 @@ int ccnGenerateWorleyNoise(
 	unsigned int points,
 	unsigned int n,
 	int low, int high,
-	float lowValue, float highValue,
 	ccnDistanceMethod distanceMethod,
 	ccnInterpolationMethod interpolationMethod)
 {
@@ -147,13 +146,13 @@ int ccnGenerateWorleyNoise(
 		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
 		
 		if(pointId <= n || pointsDistances[n] > high) {
-			ccnStore(*buffer + i, storeMethod, highValue);
+			ccnStore(*buffer + i, storeMethod, range.high);
 		}
 		else if(pointsDistances[n] < low) {
-			ccnStore(*buffer + i, storeMethod, lowValue);
+			ccnStore(*buffer + i, storeMethod, range.low);
 		}
 		else {
-			ccnStore(*buffer + i, storeMethod, ccnInterpolate(lowValue, highValue, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
+			ccnStore(*buffer + i, storeMethod, ccnInterpolate(range.low, range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
 		}
 	}
 
@@ -213,10 +212,6 @@ int ccnGenerateValueNoise(
 	else {
 		negativeOffset.x = negativeOffset.y = 0;
 		positiveOffset.x = positiveOffset.y = 1;
-	}
-
-	for(i = 0; i < size; i++) {
-		(*buffer)[i] = 0;
 	}
 
 	unsigned int octaveWidth = width / scale;
