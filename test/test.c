@@ -25,7 +25,7 @@ typedef struct {
 static void generate(int left, int top)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
-	float *noise = malloc(sizeof(float)* (WIDTH * HEIGHT));
+	float *noise = malloc((WIDTH * HEIGHT) * sizeof(float));
 	ccnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
@@ -33,7 +33,7 @@ static void generate(int left, int top)
 	tileConfig.yPeriod = 2;
 
 	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, 30, 1, 0, 70, 0.1f, 1.0f, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_INFINITE, 64, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.25f, 0.75f }, 64, CCN_INTERP_CUBIC);
 	//ccnGenerateWhiteNoise(&noise, seed, WIDTH, HEIGHT);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {

@@ -63,6 +63,9 @@ int ccnGenerateWorleyNoise(
 	ccnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
+	ccnStoreMethod storeMethod,
+	ccnRange range,
+
 	unsigned int points,
 	unsigned int n,
 	int low, int high,
@@ -145,17 +148,20 @@ int ccnGenerateWorleyNoise(
 int ccnGenerateWhiteNoise(
 	float **buffer,
 	unsigned int seed,
-	unsigned int width, unsigned int height)
+	unsigned int width, unsigned int height,
+	ccnStoreMethod storeMethod,
+	ccnRange range)
 {
 	unsigned int size = width * height;
 	unsigned int i;
+	float multiplier = range.high - range.low;
 	
 	ccRandomizer32 randomizer;
 
 	ccrSeed32(&randomizer, seed);
 
 	for(i = 0; i < size; i++) {
-		(*buffer)[i] = ccrGenerateFloat32(&randomizer);
+		(*buffer)[i] = ccrGenerateFloat32(&randomizer) * multiplier + range.low;
 	}
 
 	return CCN_ERROR_NONE;
@@ -167,15 +173,16 @@ int ccnGenerateValueNoise(
 	ccnTileConfiguration *tileConfig,
 	int x, int y,
 	unsigned int width, unsigned int height,
-	unsigned int octaves,
-	unsigned int maxOctave,
+	ccnStoreMethod storeMethod,
+	ccnRange range,
+
+	unsigned int scale,
 	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = width * height;
-	unsigned int octaveSize = maxOctave;
 	unsigned int i, j, k, l;
-	
-	float influence = 0.5f;
+
+	float multiplier = range.high - range.low;
 
 	ccPoint negativeOffset;
 	ccPoint positiveOffset;
@@ -190,109 +197,92 @@ int ccnGenerateValueNoise(
 		positiveOffset.x = positiveOffset.y = 1;
 	}
 
-	octaveSize = maxOctave;
-
 	for(i = 0; i < size; i++) {
 		(*buffer)[i] = 0;
 	}
 
-	for(i = 0; i < octaves; i++) {
-		unsigned int octaveWidth = width / octaveSize;
-		unsigned int octaveHeight = height / octaveSize;
-		unsigned int offsetHeight = octaveHeight + negativeOffset.y + positiveOffset.y;
-		ccPoint offset;
+	unsigned int octaveWidth = width / scale;
+	unsigned int octaveHeight = height / scale;
+	unsigned int offsetHeight = octaveHeight + negativeOffset.y + positiveOffset.y;
+	ccPoint offset;
 
-		float *xValues = malloc(width * offsetHeight * sizeof(float));
+	float *xValues = malloc(width * offsetHeight * sizeof(float));
 
-		offset.x = tileConfig->xPeriod * octaveWidth;
-		offset.y = tileConfig->yPeriod * octaveHeight;
+	offset.x = tileConfig->xPeriod * octaveWidth;
+	offset.y = tileConfig->yPeriod * octaveHeight;
 
-		for(j = 0; j < offsetHeight; j++) {
-			for(k = 0; k < width; k++) {
-				unsigned int octX = k / octaveSize;
+	for(j = 0; j < offsetHeight; j++) {
+		for(k = 0; k < width; k++) {
+			unsigned int octX = k / scale;
 
-				float factor = (float)(k - octX * octaveSize) / octaveSize;
+			float factor = (float)(k - octX * scale) / scale;
 
-				if(interpolationMethod == CCN_INTERP_CUBIC) {
-					float bufferedValues[4];
+			if(interpolationMethod == CCN_INTERP_CUBIC) {
+				float bufferedValues[4];
 
-					if(factor == 0) {
-						if(k == 0) {
-							for(l = 0; l < 4; l++) {
-								bufferedValues[l] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX - 1 + l + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
-							}
+				if(factor == 0) {
+					if(k == 0) {
+						for(l = 0; l < 4; l++) {
+							bufferedValues[l] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX - 1 + l + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 						}
-						else {
-							for(l = 0; l < 3; l++) {
-								bufferedValues[l] = bufferedValues[l + 1];
-							}
-
-							bufferedValues[3] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 2 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
-						}
-
-						xValues[j * width + k] = bufferedValues[1];
 					}
 					else {
-						xValues[j * width + k] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
+						for(l = 0; l < 3; l++) {
+							bufferedValues[l] = bufferedValues[l + 1];
+						}
+
+						bufferedValues[3] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 2 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 					}
+
+					xValues[j * width + k] = bufferedValues[1];
 				}
 				else {
-					float bufferedValues[2];
+					xValues[j * width + k] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
+				}
+			}
+			else {
+				float bufferedValues[2];
 
-					if(factor == 0) {
-						if(k == 0) {
-							bufferedValues[0] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
-						}
-						else {
-							bufferedValues[0] = bufferedValues[1];
-						}
-
-						bufferedValues[1] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 1 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
-
-						xValues[j * width + k] = bufferedValues[0];
+				if(factor == 0) {
+					if(k == 0) {
+						bufferedValues[0] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 					}
 					else {
-						xValues[j * width + k] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
+						bufferedValues[0] = bufferedValues[1];
 					}
-				}
-			}
-		}
 
-		for(j = 0; j < size; j++) {
-			unsigned int Y = j / width;
-			unsigned int octY = Y / octaveSize;
-			unsigned int index = (j - Y * width) + (octY + negativeOffset.y) * width;
+					bufferedValues[1] = ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(octX + 1 + x * octaveWidth, offset.x), ccnWrapCoordinate(j + y * octaveHeight, offset.y));
 
-			float factor = (float)(Y - octY * octaveSize) / octaveSize;
-
-			if(factor == 0) {
-				(*buffer)[j] += xValues[index] * influence;
-			}
-			else {
-				if(interpolationMethod == CCN_INTERP_CUBIC) {
-					(*buffer)[j] += ccTriInterpolateCubic(xValues[index - width], xValues[index], xValues[index + width], xValues[index + (width << 1)], factor) * influence;
+					xValues[j * width + k] = bufferedValues[0];
 				}
 				else {
-					(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * influence;
+					xValues[j * width + k] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
 				}
-			}
-		}
-		
-		free(xValues);
-
-		influence *= 0.5f;
-
-		octaveSize >>= 1;
-		seed++;
-		if(octaveSize == 0) {
-			if(octaves == CCN_INFINITE) {
-				break;
-			}
-			else {
-				return CCN_ERROR_INVALID_ARGUMENT_RANGE;
 			}
 		}
 	}
+
+	for(j = 0; j < size; j++) {
+		unsigned int Y = j / width;
+		unsigned int octY = Y / scale;
+		unsigned int index = (j - Y * width) + (octY + negativeOffset.y) * width;
+
+		float factor = (float)(Y - octY * scale) / scale;
+
+		if(factor == 0) {
+			(*buffer)[j] += xValues[index] * multiplier + range.low;
+		}
+		else {
+			if(interpolationMethod == CCN_INTERP_CUBIC) {
+				(*buffer)[j] += ccTriInterpolateCubic(xValues[index - width], xValues[index], xValues[index + width], xValues[index + (width << 1)], factor) * multiplier + range.low;
+			}
+			else {
+				(*buffer)[j] += ccnInterpolate(xValues[index], xValues[index + width], factor, interpolationMethod) * multiplier + range.low;
+			}
+		}
+	}
+		
+	free(xValues);
 
 	return CCN_ERROR_NONE;
 }
