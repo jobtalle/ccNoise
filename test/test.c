@@ -29,8 +29,8 @@ static void generate(int left, int top)
 	ccnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
-	tileConfig.xPeriod = 2;
-	tileConfig.yPeriod = 2;
+	tileConfig.xPeriod = 1;
+	tileConfig.yPeriod = 1;
 
 	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.25f, 0.75f }, 64, CCN_INTERP_CUBIC);
 	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 0.5f }, 64, CCN_INTERP_COSINE);

@@ -317,29 +317,39 @@ int ccnGeneratePerlinNoise(
 	unsigned int totalSteps = xSteps * ySteps;
 	unsigned int size = width * height;
 	unsigned int i;
+	
+	ccPoint offset = (ccPoint){ x * (xSteps - 1), y * (ySteps - 1) };
 
 	ccnVector *vectors = malloc(sizeof(ccnVector)* totalSteps);
 
+	if(tileConfig->tileMethod = CCN_TILE_NOT) {
+		tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
+	}
+	else{
+		tileConfig->xPeriod *= xSteps - 1;
+		tileConfig->yPeriod *= ySteps - 1;
+	}
+
 	for(i = 0; i < totalSteps; i++) {
-		int y = i / xSteps;
-		int x = i - y * xSteps;
-		float radians = (float)(ccrGenerateFloatCoordinate(seed, x, y) * CC_TRI_PI_DOUBLE);
+		int Y = i / xSteps;
+		int X = i - Y * xSteps;
+		float radians = (float)(ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(X + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(Y + offset.y, tileConfig->yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i].x = (float)cos(radians);
 		vectors[i].y = (float)sin(radians);
 	}
 
 	for(i = 0; i < size; i++) {
-		int y = i / width;
-		int x = i - y * width;
-		int xStep = x / scale;
-		int yStep = y / scale;
+		int Y = i / width;
+		int X = i - Y * width;
+		int xStep = X / scale;
+		int yStep = Y / scale;
 
-		float factorX = (float)(x - xStep * scale) / scale;
-		float factorY = (float)(y - yStep * scale) / scale;
+		float factorX = (float)(X - xStep * scale) / scale;
+		float factorY = (float)(Y - yStep * scale) / scale;
 
-		float vec0x = (float)(x - xStep * scale) / scale;
-		float vec0y = (float)(y - yStep * scale) / scale;
+		float vec0x = (float)(X - xStep * scale) / scale;
+		float vec0y = (float)(Y - yStep * scale) / scale;
 		float vec1x = vec0x - 1.0f;
 		float vec1y = vec0y - 1.0f;
 
