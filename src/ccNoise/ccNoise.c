@@ -25,6 +25,9 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 		return ccTriInterpolateQuadraticInverse(a, b, x);
 	case CCN_INTERP_COSINE:
 		return ccTriInterpolateCosine(a, b, x);
+	case CCN_INTERP_PERLIN:
+		return a + x*x*x*(x*(x * 6 - 15) + 10)*(b - a);
+		break;
 	default:
 		return 0;
 	}
@@ -354,7 +357,7 @@ int ccnGeneratePerlinNoise(
 		directionVectors[3] = (ccnVector){ vec1x, vec1y };
 
 		ccnStore(*buffer + i, storeMethod,
-			ccnInterpolate(
+			fabs(ccnInterpolate(
 			ccnInterpolate(
 			dotProduct(randomVectors[0], directionVectors[0]),
 			dotProduct(randomVectors[1], directionVectors[1]),
@@ -363,7 +366,7 @@ int ccnGeneratePerlinNoise(
 			dotProduct(randomVectors[2], directionVectors[2]),
 			dotProduct(randomVectors[3], directionVectors[3]),
 			factorX, interpolationMethod),
-			factorY, interpolationMethod));
+			factorY, interpolationMethod)));
 	}
 
 	return CCN_ERROR_NONE;
