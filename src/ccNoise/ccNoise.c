@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,10 @@
 #include <ccRandom/ccRandom.h>
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
+
+typedef struct {
+	float x, y;
+} ccnVector;
 
 static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
 {
@@ -78,90 +83,6 @@ static void ccnStore(float *buffer, ccnStoreMethod method, float value)
 	}
 }
 
-int ccnGenerateWorleyNoise(
-	float **buffer,
-	unsigned int seed,
-	ccnTileConfiguration *tileConfig,
-	int x, int y,
-	unsigned int width, unsigned int height,
-	ccnStoreMethod storeMethod,
-	ccnRange range,
-
-	unsigned int points,
-	unsigned int n,
-	int low, int high,
-	ccnDistanceMethod distanceMethod,
-	ccnInterpolationMethod interpolationMethod)
-{
-	unsigned int size = width * height;
-	unsigned int i, j;
-	unsigned int pointId = 0;
-	unsigned int pointListSize = points * 9;
-	ccPoint offset;
-
-	ccPoint *pointList = malloc(pointListSize*sizeof(ccPoint));
-	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
-
-	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
-
-	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
-
-	if(tileConfig->tileMethod = CCN_TILE_NOT) tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
-
-	for(offset.x = -1; offset.x <= 1; offset.x++) {
-		for(offset.y = -1; offset.y <= 1; offset.y++) {
-			ccRandomizer32 randomizer;
-
-			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(seed, ccnWrapCoordinate(x + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(y + offset.y, tileConfig->yPeriod)));
-
-			for(i = 0; i < points; i++) {
-				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
-				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
-				pointId++;
-			}
-		}
-	}
-
-	for(i = 0; i < size; i++) {
-		ccPoint p;
-		p.y = i / width;
-		p.x = i - p.y * width;
-
-		pointId = 0;
-		for(j = 0; j < pointListSize; j++) {
-			unsigned int manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
-
-			if(manhattanDistance < maxManhattanDistance) {
-				if(distanceMethod == CCN_DIST_MANHATTAN) {
-					pointsDistances[pointId] = manhattanDistance;
-				}
-				else {
-					pointsDistances[pointId] = ccnDistance(p, pointList[j], distanceMethod);
-				}
-
-				pointId++;
-			}
-		}
-
-		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
-		
-		if(pointId <= n || pointsDistances[n] > high) {
-			ccnStore(*buffer + i, storeMethod, range.high);
-		}
-		else if(pointsDistances[n] < low) {
-			ccnStore(*buffer + i, storeMethod, range.low);
-		}
-		else {
-			ccnStore(*buffer + i, storeMethod, ccnInterpolate(range.low, range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
-		}
-	}
-
-	free(pointList);
-	free(pointsDistances);
-
-	return CCN_ERROR_NONE;
-}
-
 int ccnGenerateWhiteNoise(
 	float **buffer,
 	unsigned int seed,
@@ -192,7 +113,6 @@ int ccnGenerateValueNoise(
 	unsigned int width, unsigned int height,
 	ccnStoreMethod storeMethod,
 	ccnRange range,
-
 	unsigned int scale,
 	ccnInterpolationMethod interpolationMethod)
 {
@@ -286,6 +206,165 @@ int ccnGenerateValueNoise(
 	}
 		
 	free(xValues);
+
+	return CCN_ERROR_NONE;
+}
+
+int ccnGenerateWorleyNoise(
+	float **buffer,
+	unsigned int seed,
+	ccnTileConfiguration *tileConfig,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	ccnStoreMethod storeMethod,
+	ccnRange range,
+	unsigned int points,
+	unsigned int n,
+	int low, int high,
+	ccnDistanceMethod distanceMethod,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int size = width * height;
+	unsigned int i, j;
+	unsigned int pointId = 0;
+	unsigned int pointListSize = points * 9;
+	ccPoint offset;
+
+	ccPoint *pointList = malloc(pointListSize*sizeof(ccPoint));
+	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
+
+	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
+
+	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
+
+	if(tileConfig->tileMethod = CCN_TILE_NOT) tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
+
+	for(offset.x = -1; offset.x <= 1; offset.x++) {
+		for(offset.y = -1; offset.y <= 1; offset.y++) {
+			ccRandomizer32 randomizer;
+
+			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(seed, ccnWrapCoordinate(x + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(y + offset.y, tileConfig->yPeriod)));
+
+			for(i = 0; i < points; i++) {
+				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * width);
+				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * height);
+				pointId++;
+			}
+		}
+	}
+
+	for(i = 0; i < size; i++) {
+		ccPoint p;
+		p.y = i / width;
+		p.x = i - p.y * width;
+
+		pointId = 0;
+		for(j = 0; j < pointListSize; j++) {
+			unsigned int manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
+
+			if(manhattanDistance < maxManhattanDistance) {
+				if(distanceMethod == CCN_DIST_MANHATTAN) {
+					pointsDistances[pointId] = manhattanDistance;
+				}
+				else {
+					pointsDistances[pointId] = ccnDistance(p, pointList[j], distanceMethod);
+				}
+
+				pointId++;
+			}
+		}
+
+		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
+
+		if(pointId <= n || pointsDistances[n] > high) {
+			ccnStore(*buffer + i, storeMethod, range.high);
+		}
+		else if(pointsDistances[n] < low) {
+			ccnStore(*buffer + i, storeMethod, range.low);
+		}
+		else {
+			ccnStore(*buffer + i, storeMethod, ccnInterpolate(range.low, range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
+		}
+	}
+
+	free(pointList);
+	free(pointsDistances);
+
+	return CCN_ERROR_NONE;
+}
+
+static float dotProduct(ccnVector v1, ccnVector v2) {
+	//printf("%f\n", v1.x * v2.x + v1.y * v2.y);
+	return v1.x * v2.x + v1.y * v2.y;
+}
+
+int ccnGeneratePerlinNoise(
+	float **buffer,
+	unsigned int seed,
+	ccnTileConfiguration *tileConfig,
+	int x, int y,
+	unsigned int width, unsigned int height,
+	ccnStoreMethod storeMethod,
+	ccnRange range,
+	unsigned int scale,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int xSteps = (width / scale) + 1;
+	unsigned int ySteps = (height / scale) + 1;
+	unsigned int totalSteps = xSteps * ySteps;
+	unsigned int size = width * height;
+	unsigned int i;
+
+	ccnVector *vectors = malloc(sizeof(ccnVector)* totalSteps);
+
+	for(i = 0; i < totalSteps; i++) {
+		int y = i / xSteps;
+		int x = i - y * xSteps;
+		float radians = (float)(ccrGenerateFloatCoordinate(seed, x, y) * CC_TRI_PI_DOUBLE);
+
+		vectors[i].x = (float)cos(radians);
+		vectors[i].y = (float)sin(radians);
+	}
+
+	for(i = 0; i < size; i++) {
+		int y = i / width;
+		int x = i - y * width;
+		int xStep = x / scale;
+		int yStep = y / scale;
+
+		float factorX = (float)(x - xStep * scale) / scale;
+		float factorY = (float)(y - yStep * scale) / scale;
+
+		float vec0x = (float)(x - xStep * scale) / scale;
+		float vec0y = (float)(y - yStep * scale) / scale;
+		float vec1x = vec0x - 1.0f;
+		float vec1y = vec0y - 1.0f;
+
+		ccnVector directionVectors[4];
+		ccnVector randomVectors[4];
+
+		randomVectors[0] = vectors[xStep + yStep * xSteps];
+		randomVectors[1] = vectors[xStep + yStep * xSteps + 1];
+		randomVectors[2] = vectors[xStep + (yStep + 1) * xSteps];
+		randomVectors[3] = vectors[xStep + (yStep + 1) * xSteps + 1];
+
+		directionVectors[0] = (ccnVector){ vec0x, vec0y };
+		directionVectors[1] = (ccnVector){ vec1x, vec0y };
+		directionVectors[2] = (ccnVector){ vec0x, vec1y };
+		directionVectors[3] = (ccnVector){ vec1x, vec1y };
+
+		ccnStore(*buffer + i, storeMethod,
+			ccnInterpolate(
+			ccnInterpolate(
+			dotProduct(randomVectors[0], directionVectors[0]),
+			dotProduct(randomVectors[1], directionVectors[1]),
+			factorX, interpolationMethod),
+			ccnInterpolate(
+			dotProduct(randomVectors[2], directionVectors[2]),
+			dotProduct(randomVectors[3], directionVectors[3]),
+			factorX, interpolationMethod),
+			factorY, interpolationMethod));
+	}
 
 	return CCN_ERROR_NONE;
 }
