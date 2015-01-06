@@ -29,14 +29,11 @@ static void generate(int left, int top)
 	ccnTileConfiguration tileConfig;
 
 	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
-	tileConfig.xPeriod = 1;
-	tileConfig.yPeriod = 1;
+	tileConfig.xPeriod = 2;
+	tileConfig.yPeriod = 2;
 
-	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.25f, 0.75f }, 64, CCN_INTERP_CUBIC);
-	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 0.5f }, 64, CCN_INTERP_COSINE);
-	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_ADD, (ccnRange){ 0.0f, 0.5f }, 30, 1, 0, 70, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	//ccnGenerateValueNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.2f, 0.8f }, 64, CCN_INTERP_CUBIC);
-	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 1.0f }, 64, CCN_INTERP_PERLIN);
+	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 4.0f }, 64, CCN_INTERP_PERLIN);
+	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_MULTIPLY, (ccnRange){ 0.0f, 1.0f }, 30, 0, 0, 60, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);

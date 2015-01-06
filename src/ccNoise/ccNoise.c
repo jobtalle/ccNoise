@@ -348,12 +348,9 @@ int ccnGeneratePerlinNoise(
 		float factorX = (float)(X - xStep * scale) / scale;
 		float factorY = (float)(Y - yStep * scale) / scale;
 
-		float vec0x = (float)(X - xStep * scale) / scale;
-		float vec0y = (float)(Y - yStep * scale) / scale;
-		float vec1x = vec0x - 1.0f;
-		float vec1y = vec0y - 1.0f;
+		float vecX = (float)(X - xStep * scale) / scale;
+		float vecY = (float)(Y - yStep * scale) / scale;
 
-		ccnVector directionVectors[4];
 		ccnVector randomVectors[4];
 
 		randomVectors[0] = vectors[xStep + yStep * xSteps];
@@ -361,22 +358,18 @@ int ccnGeneratePerlinNoise(
 		randomVectors[2] = vectors[xStep + (yStep + 1) * xSteps];
 		randomVectors[3] = vectors[xStep + (yStep + 1) * xSteps + 1];
 
-		directionVectors[0] = (ccnVector){ vec0x, vec0y };
-		directionVectors[1] = (ccnVector){ vec1x, vec0y };
-		directionVectors[2] = (ccnVector){ vec0x, vec1y };
-		directionVectors[3] = (ccnVector){ vec1x, vec1y };
+		float v00, v10, v01, v11;
+
+		v00 = vectors[xStep + yStep * xSteps].x * vecX + vectors[xStep + yStep * xSteps].y * vecY;
+		v10 = vectors[xStep + yStep * xSteps + 1].x * (vecX - 1.0f) + vectors[xStep + yStep * xSteps + 1].y * vecY;
+		v01 = vectors[xStep + (yStep + 1) * xSteps].x * vecX + vectors[xStep + (yStep + 1) * xSteps].y * (vecY - 1.0f);
+		v11 = vectors[xStep + (yStep + 1) * xSteps + 1].x * (vecX - 1.0f) + vectors[xStep + (yStep + 1) * xSteps + 1].y * (vecY - 1.0f);
 
 		ccnStore(*buffer + i, storeMethod,
 			fabs(ccnInterpolate(
-			ccnInterpolate(
-			dotProduct(randomVectors[0], directionVectors[0]),
-			dotProduct(randomVectors[1], directionVectors[1]),
-			factorX, interpolationMethod),
-			ccnInterpolate(
-			dotProduct(randomVectors[2], directionVectors[2]),
-			dotProduct(randomVectors[3], directionVectors[3]),
-			factorX, interpolationMethod),
-			factorY, interpolationMethod)));
+			ccnInterpolate(v00, v10, factorX, interpolationMethod),
+			ccnInterpolate(v01, v11, factorX, interpolationMethod),
+			factorY, interpolationMethod)) * 1.5f);
 	}
 
 	return CCN_ERROR_NONE;
