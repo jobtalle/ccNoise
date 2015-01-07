@@ -10,6 +10,8 @@
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
 
+#define _CCN_PERLIN_NORMALIZER 0.707107
+
 typedef struct {
 	float x, y;
 } ccnVector;
@@ -313,21 +315,23 @@ int ccnGeneratePerlinNoise(
 	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int xSteps = (width / scale) + 1;
-	unsigned int ySteps = (height / scale) + 1;
-	unsigned int totalSteps = xSteps * ySteps;
+	unsigned int ySteps = height / scale;
+	unsigned int totalSteps = xSteps * (ySteps + 1);
 	unsigned int size = width * height;
 	unsigned int i;
-	
-	ccPoint offset = (ccPoint){ x * (xSteps - 1), y * (ySteps - 1) };
 
-	ccnVector *vectors = malloc(sizeof(ccnVector)* totalSteps);
+	float multiplier = range.high - range.low;
+	
+	ccPoint offset = (ccPoint){ x * (xSteps - 1), y * ySteps };
+
+	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 
 	if(tileConfig->tileMethod = CCN_TILE_NOT) {
 		tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
 	}
 	else{
 		tileConfig->xPeriod *= xSteps - 1;
-		tileConfig->yPeriod *= ySteps - 1;
+		tileConfig->yPeriod *= ySteps;
 	}
 
 	for(i = 0; i < totalSteps; i++) {
@@ -335,8 +339,8 @@ int ccnGeneratePerlinNoise(
 		int X = i - Y * xSteps;
 		float radians = (float)(ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(X + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(Y + offset.y, tileConfig->yPeriod)) * CC_TRI_PI_DOUBLE);
 
-		vectors[i].x = (float)cos(radians);
-		vectors[i].y = (float)sin(radians);
+		vectors[i << 1] = (float)cos(radians);
+		vectors[(i << 1) + 1] = (float)sin(radians);
 	}
 
 	for(i = 0; i < size; i++) {
@@ -345,32 +349,28 @@ int ccnGeneratePerlinNoise(
 		int xStep = X / scale;
 		int yStep = Y / scale;
 
+		unsigned int indexTop = (xStep + yStep * xSteps) << 1;
+		unsigned int indexBottom = indexTop + (xSteps << 1);
+
 		float factorX = (float)(X - xStep * scale) / scale;
-		float factorY = (float)(Y - yStep * scale) / scale;
 
 		float vecX = (float)(X - xStep * scale) / scale;
 		float vecY = (float)(Y - yStep * scale) / scale;
 
-		ccnVector randomVectors[4];
-
-		randomVectors[0] = vectors[xStep + yStep * xSteps];
-		randomVectors[1] = vectors[xStep + yStep * xSteps + 1];
-		randomVectors[2] = vectors[xStep + (yStep + 1) * xSteps];
-		randomVectors[3] = vectors[xStep + (yStep + 1) * xSteps + 1];
-
-		float v00, v10, v01, v11;
-
-		v00 = vectors[xStep + yStep * xSteps].x * vecX + vectors[xStep + yStep * xSteps].y * vecY;
-		v10 = vectors[xStep + yStep * xSteps + 1].x * (vecX - 1.0f) + vectors[xStep + yStep * xSteps + 1].y * vecY;
-		v01 = vectors[xStep + (yStep + 1) * xSteps].x * vecX + vectors[xStep + (yStep + 1) * xSteps].y * (vecY - 1.0f);
-		v11 = vectors[xStep + (yStep + 1) * xSteps + 1].x * (vecX - 1.0f) + vectors[xStep + (yStep + 1) * xSteps + 1].y * (vecY - 1.0f);
-
 		ccnStore(*buffer + i, storeMethod,
-			fabs(ccnInterpolate(
-			ccnInterpolate(v00, v10, factorX, interpolationMethod),
-			ccnInterpolate(v01, v11, factorX, interpolationMethod),
-			factorY, interpolationMethod)) * 1.5f);
+			(ccnInterpolate(
+			ccnInterpolate(
+			vectors[indexTop] * vecX + vectors[indexTop + 1] * vecY,
+			vectors[indexTop + 2] * (vecX - 1.0f) + vectors[indexTop + 3] * vecY,
+			factorX, interpolationMethod),
+			ccnInterpolate(
+			vectors[indexBottom] * vecX + vectors[indexBottom + 1] * (vecY - 1.0f),
+			vectors[indexBottom + 2] * (vecX - 1.0f) + vectors[indexBottom + 3] * (vecY - 1.0f),
+			factorX, interpolationMethod),
+			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier + range.low);
 	}
+
+	free(vectors);
 
 	return CCN_ERROR_NONE;
 }
