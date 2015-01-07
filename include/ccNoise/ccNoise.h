@@ -30,6 +30,11 @@ extern "C"
 #define CCN_ERROR_NONE                   0x00
 #define CCN_ERROR_INVALID_METHOD         0x01
 
+#define ccnNoiseAllocate(noise, w, h) noise.values = malloc(sizeof(float)* w * h); noise.width = w; noise.height = h;
+#define ccnNoiseGet(noise, x, y) noise.values[x + noise.line * y]
+#define ccnNoiseSet(noise, x, y, value) noise.values[x + noise.line * y] = value
+#define ccnNoiseFree(noise) free(noise.values)
+
 typedef enum {
 	CCN_INTERP_LINEAR,
 	CCN_INTERP_QUADRATIC,
@@ -59,6 +64,11 @@ typedef enum {
 } ccnStoreMethod;
 
 typedef struct {
+	unsigned int width, height;
+	float *values;
+} ccnNoise;
+
+typedef struct {
 	ccnTileMethod tileMethod;
 	unsigned int xPeriod, yPeriod;
 } ccnTileConfiguration;
@@ -67,35 +77,30 @@ typedef struct {
 	float low, high;
 } ccnRange;
 
+typedef struct {
+	unsigned int seed;
+	int x, y;
+	ccnTileConfiguration tileConfiguration;
+	ccnStoreMethod storeMethod;
+	ccnRange range;
+} ccnNoiseConfiguration;
+
 // Create white noise
 int ccnGenerateWhiteNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	unsigned int width, unsigned int height,     // Noise dimensions
-	ccnStoreMethod storeMethod,                  // How the values are added into the buffer
-	ccnRange range);                             // Range of the generated values
+	ccnNoise noise,
+	ccnNoiseConfiguration configuration);
 
 // Create value noise
 int ccnGenerateValueNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	ccnTileConfiguration *tileConfig,            // Tile configuration
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	ccnStoreMethod storeMethod,                  // How the values are added into the buffer
-	ccnRange range,                              // Range of the generated values
+	ccnNoise noise,
+	ccnNoiseConfiguration configuration,
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create worley noise
 int ccnGenerateWorleyNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	ccnTileConfiguration *tileConfig,            // Tile configuration
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	ccnStoreMethod storeMethod,                  // How the values are added into the buffer
-	ccnRange range,                              // Range of the generated values
+	ccnNoise noise,
+	ccnNoiseConfiguration configuration,
 	unsigned int points,                         // The number of points per noise
 	unsigned int n,                              // Worley noise interpolates to the n-th closest point
 	int low, int high,                           // Interpolation occurs between the lowest and highest distance
@@ -104,13 +109,8 @@ int ccnGenerateWorleyNoise(
 
 // Create perlin noise
 int ccnGeneratePerlinNoise(
-	float **buffer,                              // The buffer to store the generated values in
-	unsigned int seed,                           // The random seed
-	ccnTileConfiguration *tileConfig,            // Tile configuration
-	int x, int y,                                // Adjecent coordinates will tile seamlessly
-	unsigned int width, unsigned int height,     // Noise dimensions
-	ccnStoreMethod storeMethod,                  // How the values are added into the buffer
-	ccnRange range,                              // Range of the generated values
+	ccnNoise noise,
+	ccnNoiseConfiguration configuration,
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 

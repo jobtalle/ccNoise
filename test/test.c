@@ -25,27 +25,40 @@ typedef struct {
 static void generate(int left, int top)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
-	float *noise = malloc((WIDTH * HEIGHT) * sizeof(float));
-	ccnTileConfiguration tileConfig;
 
-	tileConfig.tileMethod = CCN_TILE_CARTESIAN;
-	tileConfig.xPeriod = 2;
-	tileConfig.yPeriod = 2;
+	ccnNoise noise;
+	ccnNoiseConfiguration config;
 
-	//ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 3.0f }, 128, CCN_INTERP_PERLIN);
-	ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.6f, 0.0f }, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_ADD, (ccnRange){ 0.0f, 3.6f }, 256, CCN_INTERP_PERLIN);
+	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
+
+	config.seed = seed;
+	config.range = (ccnRange){ 0.6f, 0.0f };
+	config.storeMethod = CCN_STORE_SET;
+	config.x = left?0:1;
+	config.y = top?0:1;
+
+	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
+	config.tileConfiguration.xPeriod = 2;
+	config.tileConfiguration.yPeriod = 2;
+
+	ccnGenerateWorleyNoise(noise, config, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+
+	config.range = (ccnRange){ 0.0f, 3.6f };
+	config.storeMethod = CCN_STORE_ADD;
+
+	ccnGeneratePerlinNoise(noise, config, 256, CCN_INTERP_PERLIN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = noise[i] > 1.95f?(unsigned char)(noise[i] * 255.0f):0;
+		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.95f?(unsigned char)(noise.values[i] * 255.0f):0;
 		pixels[i].a = 255;
 	}
+
+	ccnNoiseFree(noise);
 
 	glBindTexture(GL_TEXTURE_2D, left?top?textureLeftTop:textureLeftBottom:top?textureRightTop:textureRightBottom);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	free(pixels);
-	free(noise);
 }
 
 static void generateLeftTop()
