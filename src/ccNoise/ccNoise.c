@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <ccNoise/ccNoise.h>
+#include <ccNoise/ccnoise.h>
 #include <ccRandom/ccRandom.h>
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
@@ -89,53 +89,53 @@ static void ccnStore(float *buffer, ccnStoreMethod method, float value)
 }
 
 int ccnGenerateWhiteNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration)
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration)
 {
-	unsigned int size = noise.width * noise.height;
+	unsigned int size = noise->width * noise->height;
 	unsigned int i;
-	float multiplier = configuration.range.high - configuration.range.low;
+	float multiplier = configuration->range.high - configuration->range.low;
 	
 	ccRandomizer32 randomizer;
 
-	ccrSeed32(&randomizer, configuration.seed);
+	ccrSeed32(&randomizer, configuration->seed);
 
 	// TODO: use coordinate based values
 
 
 	for(i = 0; i < size; i++) {
-		ccnStore(noise.values + i, configuration.storeMethod, ccrGenerateFloat32(&randomizer) * multiplier + configuration.range.low);
+		ccnStore(noise->values + i, configuration->storeMethod, ccrGenerateFloat32(&randomizer) * multiplier + configuration->range.low);
 	}
 
 	return CCN_ERROR_NONE;
 }
 
 int ccnGenerateValueNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise.width * noise.height;
-	unsigned int octaveWidth = noise.width / scale;
-	unsigned int octaveHeight = noise.height / scale;
+	unsigned int size = noise->width * noise->height;
+	unsigned int octaveWidth = noise->width / scale;
+	unsigned int octaveHeight = noise->height / scale;
 	unsigned int offsetHeight;
 	unsigned int i, j, k;
 	unsigned int yOffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
 
-	float multiplier = configuration.range.high - configuration.range.low;
+	float multiplier = configuration->range.high - configuration->range.low;
 	float *xValues;
 
 	ccnPoint offset;
 
 	offsetHeight = octaveHeight + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
-	xValues = malloc(noise.width * offsetHeight * sizeof(float));
+	xValues = malloc(noise->width * offsetHeight * sizeof(float));
 
-	offset.x = configuration.tileConfiguration.xPeriod * octaveWidth;
-	offset.y = configuration.tileConfiguration.yPeriod * octaveHeight;
+	offset.x = configuration->tileConfiguration.xPeriod * octaveWidth;
+	offset.y = configuration->tileConfiguration.yPeriod * octaveHeight;
 
 	for(i = 0; i < offsetHeight; i++) {
-		for(j = 0; j < noise.width; j++) {
+		for(j = 0; j < noise->width; j++) {
 			unsigned int octX = j / scale;
 
 			float factor = (float)(j - octX * scale) / scale;
@@ -146,7 +146,7 @@ int ccnGenerateValueNoise(
 				if(factor == 0) {
 					if(j == 0) {
 						for(k = 0; k < 4; k++) {
-							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration.seed, ccnWrapCoordinate(octX - 1 + k + configuration.x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration.y * octaveHeight, offset.y));
+							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
 						}
 					}
 					else {
@@ -154,13 +154,13 @@ int ccnGenerateValueNoise(
 							bufferedValues[k] = bufferedValues[k + 1];
 						}
 
-						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration.seed, ccnWrapCoordinate(octX + 2 + configuration.x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration.y * octaveHeight, offset.y));
+						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
 					}
 
-					xValues[i * noise.width + j] = bufferedValues[1];
+					xValues[i * noise->width + j] = bufferedValues[1];
 				}
 				else {
-					xValues[i * noise.width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
+					xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
 				}
 			}
 			else {
@@ -168,39 +168,39 @@ int ccnGenerateValueNoise(
 
 				if(factor == 0) {
 					if(j == 0) {
-						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration.seed, ccnWrapCoordinate(octX + configuration.x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration.y * octaveHeight, offset.y));
+						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
 					}
 					else {
 						bufferedValues[0] = bufferedValues[1];
 					}
 
-					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration.seed, ccnWrapCoordinate(octX + 1 + configuration.x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration.y * octaveHeight, offset.y));
+					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
 
-					xValues[i * noise.width + j] = bufferedValues[0];
+					xValues[i * noise->width + j] = bufferedValues[0];
 				}
 				else {
-					xValues[i * noise.width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
+					xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
 				}
 			}
 		}
 	}
 
 	for(i = 0; i < size; i++) {
-		unsigned int Y = i / noise.width;
+		unsigned int Y = i / noise->width;
 		unsigned int octY = Y / scale;
-		unsigned int index = (i - Y * noise.width) + (octY + yOffset) * noise.width;
+		unsigned int index = (i - Y * noise->width) + (octY + yOffset) * noise->width;
 
 		float factor = (float)(Y - octY * scale) / scale;
 
 		if(factor == 0) {
-			ccnStore(noise.values + i, configuration.storeMethod, xValues[index] * multiplier + configuration.range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, xValues[index] * multiplier + configuration->range.low);
 		}
 		else {
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
-				ccnStore(noise.values + i, configuration.storeMethod, ccTriInterpolateCubic(xValues[index - noise.width], xValues[index], xValues[index + noise.width], xValues[index + (noise.width << 1)], factor) * multiplier + configuration.range.low);
+				ccnStore(noise->values + i, configuration->storeMethod, ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], factor) * multiplier + configuration->range.low);
 			}
 			else {
-				ccnStore(noise.values + i, configuration.storeMethod, ccnInterpolate(xValues[index], xValues[index + noise.width], factor, interpolationMethod) * multiplier + configuration.range.low);
+				ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(xValues[index], xValues[index + noise->width], factor, interpolationMethod) * multiplier + configuration->range.low);
 			}
 		}
 	}
@@ -211,15 +211,15 @@ int ccnGenerateValueNoise(
 }
 
 int ccnGenerateWorleyNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int points,
 	unsigned int n,
 	int low, int high,
 	ccnDistanceMethod distanceMethod,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise.width * noise.height;
+	unsigned int size = noise->width * noise->height;
 	unsigned int i, j;
 	unsigned int pointId = 0;
 	unsigned int pointListSize = points * 9;
@@ -232,17 +232,17 @@ int ccnGenerateWorleyNoise(
 
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 
-	if(configuration.tileConfiguration.tileMethod = CCN_TILE_NOT) configuration.tileConfiguration.xPeriod = configuration.tileConfiguration.yPeriod = CCN_INFINITE;
+	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) configuration->tileConfiguration.xPeriod = configuration->tileConfiguration.yPeriod = CCN_INFINITE;
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
 			ccRandomizer32 randomizer;
 
-			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(configuration.seed, ccnWrapCoordinate(configuration.x + offset.x, configuration.tileConfiguration.xPeriod), ccnWrapCoordinate(configuration.y + offset.y, configuration.tileConfiguration.yPeriod)));
+			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(configuration->seed, ccnWrapCoordinate(configuration->x + offset.x, configuration->tileConfiguration.yPeriod), ccnWrapCoordinate(configuration->y + offset.y, configuration->tileConfiguration.yPeriod)));
 
 			for(i = 0; i < points; i++) {
-				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * noise.width);
-				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * noise.height);
+				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * noise->width);
+				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * noise->height);
 				pointId++;
 			}
 		}
@@ -250,8 +250,8 @@ int ccnGenerateWorleyNoise(
 
 	for(i = 0; i < size; i++) {
 		ccnPoint p;
-		p.y = i / noise.width;
-		p.x = i - p.y * noise.width;
+		p.y = i / noise->width;
+		p.x = i - p.y * noise->width;
 
 		pointId = 0;
 		for(j = 0; j < pointListSize; j++) {
@@ -272,13 +272,13 @@ int ccnGenerateWorleyNoise(
 		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
 
 		if(pointId <= n || pointsDistances[n] > high) {
-			ccnStore(noise.values + i, configuration.storeMethod, configuration.range.high);
+			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.high);
 		}
 		else if(pointsDistances[n] < low) {
-			ccnStore(noise.values + i, configuration.storeMethod, configuration.range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.low);
 		}
 		else {
-			ccnStore(noise.values + i, configuration.storeMethod, ccnInterpolate(configuration.range.low, configuration.range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
+			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(configuration->range.low, configuration->range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
 		}
 	}
 
@@ -289,41 +289,41 @@ int ccnGenerateWorleyNoise(
 }
 
 int ccnGeneratePerlinNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int xSteps = (noise.width / scale) + 1;
-	unsigned int ySteps = noise.height / scale;
+	unsigned int xSteps = (noise->width / scale) + 1;
+	unsigned int ySteps = noise->height / scale;
 	unsigned int totalSteps = xSteps * (ySteps + 1);
-	unsigned int size = noise.width * noise.height;
+	unsigned int size = noise->width * noise->height;
 	unsigned int i;
 
-	float multiplier = configuration.range.high - configuration.range.low;
+	float multiplier = configuration->range.high - configuration->range.low;
 	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 	
-	ccnPoint offset = (ccnPoint){ configuration.x * (xSteps - 1), configuration.y * ySteps };
+	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
 
-	if(configuration.tileConfiguration.tileMethod = CCN_TILE_NOT) {
-		configuration.tileConfiguration.xPeriod = configuration.tileConfiguration.yPeriod = CCN_INFINITE;
+	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
+		configuration->tileConfiguration.xPeriod = configuration->tileConfiguration.yPeriod = CCN_INFINITE;
 	}
 	else{
-		configuration.tileConfiguration.xPeriod *= xSteps - 1;
-		configuration.tileConfiguration.yPeriod *= ySteps;
+		configuration->tileConfiguration.xPeriod *= xSteps - 1;
+		configuration->tileConfiguration.yPeriod *= ySteps;
 	}
 
 	for(i = 0; i < totalSteps; i++) {
 		int Y = i / xSteps;
-		float radians = (float)(ccrGenerateFloatCoordinate(configuration.seed, ccnWrapCoordinate(i - Y * xSteps + offset.x, configuration.tileConfiguration.xPeriod), ccnWrapCoordinate(Y + offset.y, configuration.tileConfiguration.yPeriod)) * CC_TRI_PI_DOUBLE);
+		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i - Y * xSteps + offset.x, configuration->tileConfiguration.xPeriod), ccnWrapCoordinate(Y + offset.y, configuration->tileConfiguration.yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
 		vectors[(i << 1) + 1] = (float)sin(radians);
 	}
 
 	for(i = 0; i < size; i++) {
-		int Y = i / noise.width;
-		int X = i - Y * noise.width;
+		int Y = i / noise->width;
+		int X = i - Y * noise->width;
 		int xStep = X / scale;
 		int yStep = Y / scale;
 
@@ -335,7 +335,7 @@ int ccnGeneratePerlinNoise(
 		float vecX = (float)(X - xStep * scale) / scale;
 		float vecY = (float)(Y - yStep * scale) / scale;
 
-		ccnStore(noise.values + i, configuration.storeMethod,
+		ccnStore(noise->values + i, configuration->storeMethod,
 			(float)((ccnInterpolate(
 			ccnInterpolate(
 			vectors[indexTop] * vecX + vectors[indexTop + 1] * vecY,
@@ -345,7 +345,7 @@ int ccnGeneratePerlinNoise(
 			vectors[indexBottom] * vecX + vectors[indexBottom + 1] * (vecY - 1.0f),
 			vectors[indexBottom + 2] * (vecX - 1.0f) + vectors[indexBottom + 3] * (vecY - 1.0f),
 			factorX, interpolationMethod),
-			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier) + configuration.range.low);
+			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier) + configuration->range.low);
 	}
 
 	free(vectors);

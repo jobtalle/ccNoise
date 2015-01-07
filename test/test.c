@@ -38,15 +38,15 @@ static void generate(int left, int top)
 	config.y = top?0:1;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 2;
-	config.tileConfiguration.yPeriod = 2;
+	config.tileConfiguration.xPeriod = 5;
+	config.tileConfiguration.yPeriod = 5;
 
-	ccnGenerateWorleyNoise(noise, config, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	ccnGenerateWorleyNoise(&noise, &config, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	config.range = (ccnRange){ 0.0f, 3.6f };
 	config.storeMethod = CCN_STORE_ADD;
 
-	ccnGeneratePerlinNoise(noise, config, 256, CCN_INTERP_PERLIN);
+	ccnGeneratePerlinNoise(&noise, &config, 256, CCN_INTERP_PERLIN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.95f?(unsigned char)(noise.values[i] * 255.0f):0;

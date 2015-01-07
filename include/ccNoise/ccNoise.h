@@ -87,20 +87,20 @@ typedef struct {
 
 // Create white noise
 int ccnGenerateWhiteNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration);
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration);
 
 // Create value noise
 int ccnGenerateValueNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create worley noise
 int ccnGenerateWorleyNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int points,                         // The number of points per noise
 	unsigned int n,                              // Worley noise interpolates to the n-th closest point
 	int low, int high,                           // Interpolation occurs between the lowest and highest distance
@@ -109,8 +109,8 @@ int ccnGenerateWorleyNoise(
 
 // Create perlin noise
 int ccnGeneratePerlinNoise(
-	ccnNoise noise,
-	ccnNoiseConfiguration configuration,
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
