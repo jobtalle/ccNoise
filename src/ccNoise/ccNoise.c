@@ -12,10 +12,6 @@
 
 #define _CCN_PERLIN_NORMALIZER 0.707107
 
-typedef struct {
-	float x, y;
-} ccnVector;
-
 static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
 {
 	switch(interpolationMethod) {
@@ -298,11 +294,6 @@ int ccnGenerateWorleyNoise(
 	return CCN_ERROR_NONE;
 }
 
-static float dotProduct(ccnVector v1, ccnVector v2) {
-	//printf("%f\n", v1.x * v2.x + v1.y * v2.y);
-	return v1.x * v2.x + v1.y * v2.y;
-}
-
 int ccnGeneratePerlinNoise(
 	float **buffer,
 	unsigned int seed,
@@ -321,10 +312,9 @@ int ccnGeneratePerlinNoise(
 	unsigned int i;
 
 	float multiplier = range.high - range.low;
+	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 	
 	ccPoint offset = (ccPoint){ x * (xSteps - 1), y * ySteps };
-
-	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 
 	if(tileConfig->tileMethod = CCN_TILE_NOT) {
 		tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;
@@ -336,8 +326,7 @@ int ccnGeneratePerlinNoise(
 
 	for(i = 0; i < totalSteps; i++) {
 		int Y = i / xSteps;
-		int X = i - Y * xSteps;
-		float radians = (float)(ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(X + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(Y + offset.y, tileConfig->yPeriod)) * CC_TRI_PI_DOUBLE);
+		float radians = (float)(ccrGenerateFloatCoordinate(seed, ccnWrapCoordinate(i - Y * xSteps + offset.x, tileConfig->xPeriod), ccnWrapCoordinate(Y + offset.y, tileConfig->yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
 		vectors[(i << 1) + 1] = (float)sin(radians);
@@ -358,7 +347,7 @@ int ccnGeneratePerlinNoise(
 		float vecY = (float)(Y - yStep * scale) / scale;
 
 		ccnStore(*buffer + i, storeMethod,
-			(ccnInterpolate(
+			(float)((ccnInterpolate(
 			ccnInterpolate(
 			vectors[indexTop] * vecX + vectors[indexTop + 1] * vecY,
 			vectors[indexTop + 2] * (vecX - 1.0f) + vectors[indexTop + 3] * vecY,
@@ -367,7 +356,7 @@ int ccnGeneratePerlinNoise(
 			vectors[indexBottom] * vecX + vectors[indexBottom + 1] * (vecY - 1.0f),
 			vectors[indexBottom + 2] * (vecX - 1.0f) + vectors[indexBottom + 3] * (vecY - 1.0f),
 			factorX, interpolationMethod),
-			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier + range.low);
+			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier) + range.low);
 	}
 
 	free(vectors);

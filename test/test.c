@@ -32,7 +32,7 @@ static void generate(int left, int top)
 	tileConfig.xPeriod = 2;
 	tileConfig.yPeriod = 2;
 
-	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ -1.0f, 1.0f }, 128, CCN_INTERP_PERLIN);
+	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ -1.0f, 1.0f }, 64, CCN_INTERP_PERLIN);
 	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_MULTIPLY, (ccnRange){ 0.0f, 1.0f }, 30, 0, 0, 60, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
