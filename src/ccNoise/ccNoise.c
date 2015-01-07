@@ -12,6 +12,10 @@
 
 #define _CCN_PERLIN_NORMALIZER 0.707107
 
+typedef struct {
+	int x, y;
+} ccnPoint;
+
 static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
 {
 	switch(interpolationMethod) {
@@ -31,7 +35,7 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 	}
 }
 
-static unsigned int ccnDistance(ccPoint a, ccPoint b, ccnDistanceMethod distanceMethod)
+static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
 {
 	switch(distanceMethod) {
 	case CCN_DIST_MANHATTAN:
@@ -127,7 +131,7 @@ int ccnGenerateValueNoise(
 	float multiplier = range.high - range.low;
 	float *xValues;
 
-	ccPoint offset;
+	ccnPoint offset;
 
 	offsetHeight = octaveHeight + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
 	xValues = malloc(width * offsetHeight * sizeof(float));
@@ -229,9 +233,9 @@ int ccnGenerateWorleyNoise(
 	unsigned int i, j;
 	unsigned int pointId = 0;
 	unsigned int pointListSize = points * 9;
-	ccPoint offset;
+	ccnPoint offset;
 
-	ccPoint *pointList = malloc(pointListSize*sizeof(ccPoint));
+	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
@@ -255,7 +259,7 @@ int ccnGenerateWorleyNoise(
 	}
 
 	for(i = 0; i < size; i++) {
-		ccPoint p;
+		ccnPoint p;
 		p.y = i / width;
 		p.x = i - p.y * width;
 
@@ -314,7 +318,7 @@ int ccnGeneratePerlinNoise(
 	float multiplier = range.high - range.low;
 	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 	
-	ccPoint offset = (ccPoint){ x * (xSteps - 1), y * ySteps };
+	ccnPoint offset = (ccnPoint){ x * (xSteps - 1), y * ySteps };
 
 	if(tileConfig->tileMethod = CCN_TILE_NOT) {
 		tileConfig->xPeriod = tileConfig->yPeriod = CCN_INFINITE;

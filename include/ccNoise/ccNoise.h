@@ -20,8 +20,6 @@
 
 #include <stdint.h>
 
-#include <ccore/types.h>
-
 #ifdef __cplusplus
 extern "C"
 {

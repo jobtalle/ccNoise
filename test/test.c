@@ -32,11 +32,12 @@ static void generate(int left, int top)
 	tileConfig.xPeriod = 2;
 	tileConfig.yPeriod = 2;
 
-	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ -1.0f, 1.0f }, 64, CCN_INTERP_PERLIN);
-	//ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?-1:0, top?-1:0, WIDTH, HEIGHT, CCN_STORE_MULTIPLY, (ccnRange){ 0.0f, 1.0f }, 30, 0, 0, 60, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	//ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.0f, 3.0f }, 128, CCN_INTERP_PERLIN);
+	ccnGenerateWorleyNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_SET, (ccnRange){ 0.6f, 0.0f }, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	ccnGeneratePerlinNoise(&noise, seed, &tileConfig, left?0:1, top?0:1, WIDTH, HEIGHT, CCN_STORE_ADD, (ccnRange){ 0.0f, 3.6f }, 256, CCN_INTERP_PERLIN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise[i] * 255.0f);
+		pixels[i].r = pixels[i].g = pixels[i].b = noise[i] > 1.95f?(unsigned char)(noise[i] * 255.0f):0;
 		pixels[i].a = 255;
 	}
 
