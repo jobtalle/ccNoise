@@ -114,6 +114,13 @@ int ccnGeneratePerlinNoise(
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
+// Create gradient
+int ccnGenerateGradient(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int period,
+	float rotation);
+
 #ifdef __cplusplus
 }
 #endif

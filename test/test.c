@@ -38,18 +38,22 @@ static void generate(int left, int top)
 	config.y = top?0:1;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 5;
-	config.tileConfiguration.yPeriod = 5;
+	config.tileConfiguration.xPeriod = 2;
+	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateWorleyNoise(&noise, &config, 30, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
+	/*
+	ccnGenerateWorleyNoise(&noise, &config, 60, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	config.range = (ccnRange){ 0.0f, 3.6f };
 	config.storeMethod = CCN_STORE_ADD;
 
-	ccnGeneratePerlinNoise(&noise, &config, 256, CCN_INTERP_PERLIN);
+	ccnGeneratePerlinNoise(&noise, &config, 128, CCN_INTERP_PERLIN);
+	*/
+
+	ccnGenerateGradient(&noise, &config, 50, 1);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.95f?(unsigned char)(noise.values[i] * 255.0f):0;
+		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.97f?(unsigned char)(noise.values[i] * 255.0f):0;
 		pixels[i].a = 255;
 	}
 
@@ -132,7 +136,7 @@ int main(int argc, char **argv)
 			if(ccWindowEventGet().type == CC_EVENT_KEY_DOWN) {
 				switch(ccWindowEventGet().keyCode) {
 				case CC_KEY_SPACE:
-					seed = ccrGenerateUint32(&randomizer) ^ 42;
+					seed = ccrGenerateUint32(&randomizer);
 					printf("Set seed to %d\n", seed);
 					break;
 				case CC_KEY_1:

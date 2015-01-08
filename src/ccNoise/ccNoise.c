@@ -352,3 +352,19 @@ int ccnGeneratePerlinNoise(
 
 	return CCN_ERROR_NONE;
 }
+
+int ccnGenerateGradient(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int period,
+	float rotation)
+{
+	unsigned int x, y;
+
+	for(x = 0; x < noise->width; x++) {
+		for(y = 0; y < noise->height; y++) {
+		}
+	}
+
+	return CCN_ERROR_NONE;
+}
