@@ -41,16 +41,12 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	/*
 	ccnGenerateWorleyNoise(&noise, &config, 60, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	config.range = (ccnRange){ 0.0f, 3.6f };
 	config.storeMethod = CCN_STORE_ADD;
 
 	ccnGeneratePerlinNoise(&noise, &config, 128, CCN_INTERP_PERLIN);
-	*/
-
-	ccnGenerateGradient(&noise, &config, 50, 1);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.97f?(unsigned char)(noise.values[i] * 255.0f):0;
