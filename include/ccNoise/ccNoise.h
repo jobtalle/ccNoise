@@ -79,26 +79,26 @@ typedef struct {
 
 typedef struct {
 	unsigned int seed;
-	int x, y;
+	int x, y, z;
 	ccnTileConfiguration tileConfiguration;
 	ccnStoreMethod storeMethod;
 	ccnRange range;
 } ccnNoiseConfiguration;
 
 // Create white noise
-int ccnGenerateWhiteNoise(
+int ccnGenerateWhiteNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration);
 
 // Create value noise
-int ccnGenerateValueNoise(
+int ccnGenerateValueNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int scale,                          // The size of a single interpolation interval
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create worley noise
-int ccnGenerateWorleyNoise(
+int ccnGenerateWorleyNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int points,                         // The number of points per noise
@@ -108,7 +108,7 @@ int ccnGenerateWorleyNoise(
 	ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
 
 // Create perlin noise
-int ccnGeneratePerlinNoise(
+int ccnGeneratePerlinNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int scale,                          // The size of a single interpolation interval

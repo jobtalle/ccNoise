@@ -88,7 +88,7 @@ static void ccnStore(float *buffer, ccnStoreMethod method, float value)
 	}
 }
 
-int ccnGenerateWhiteNoise(
+int ccnGenerateWhiteNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration)
 {
@@ -110,7 +110,7 @@ int ccnGenerateWhiteNoise(
 	return CCN_ERROR_NONE;
 }
 
-int ccnGenerateValueNoise(
+int ccnGenerateValueNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int scale,
@@ -210,7 +210,7 @@ int ccnGenerateValueNoise(
 	return CCN_ERROR_NONE;
 }
 
-int ccnGenerateWorleyNoise(
+int ccnGenerateWorleyNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int points,
@@ -288,7 +288,7 @@ int ccnGenerateWorleyNoise(
 	return CCN_ERROR_NONE;
 }
 
-int ccnGeneratePerlinNoise(
+int ccnGeneratePerlinNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
 	unsigned int scale,
