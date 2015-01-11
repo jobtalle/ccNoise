@@ -11,7 +11,7 @@
 #include <gl/GL.h>
 
 #define WIDTH  256
-#define HEIGHT 256
+#define HEIGHT WIDTH
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
@@ -32,7 +32,7 @@ static void generate(int left, int top)
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0.6f, 0.0f };
+	config.range = (ccnRange){ 0.4f, 0.0f };
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?0:1;
 	config.y = top?0:1;
@@ -49,7 +49,8 @@ static void generate(int left, int top)
 	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = noise.values[i] > 1.97f?(unsigned char)(noise.values[i] * 255.0f):0;
+		pixels[i].r = pixels[i].g = noise.values[i] > 2.01f?(unsigned char)(noise.values[i] * 255.0f):0;
+		pixels[i].b = noise.values[i] * 25;
 		pixels[i].a = 255;
 	}
 

@@ -95,16 +95,11 @@ int ccnGenerateWhiteNoise2D(
 	unsigned int size = noise->width * noise->height;
 	unsigned int i;
 	float multiplier = configuration->range.high - configuration->range.low;
-	
-	ccRandomizer32 randomizer;
-
-	ccrSeed32(&randomizer, configuration->seed);
-
-	// TODO: use coordinate based values
-
 
 	for(i = 0; i < size; i++) {
-		ccnStore(noise->values + i, configuration->storeMethod, ccrGenerateFloat32(&randomizer) * multiplier + configuration->range.low);
+		int Y = i / noise->width;
+		int X = i - Y * noise->width;
+		ccnStore(noise->values + i, configuration->storeMethod, ccrGenerateFloatCoordinate(configuration->seed, X, Y) * multiplier + configuration->range.low);
 	}
 
 	return CCN_ERROR_NONE;
