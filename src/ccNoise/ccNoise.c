@@ -191,12 +191,17 @@ int ccnGenerateValueNoise2D(
 
 		float factor = (float)(Y - octY * scale) / scale;
 
-		if(factor == 0) {
-			ccnStore(noise->values + i, configuration->storeMethod, xValues[index] * multiplier + configuration->range.low);
+		if(interpolationMethod == CCN_INTERP_CUBIC) {
+			if(factor == 0) {
+				ccnStore(noise->values + i, configuration->storeMethod, (xValues[index] * .5f + 0.25f) * multiplier + configuration->range.low);
+			}
+			else {
+				ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], factor) * .5f + 0.25f) * multiplier + configuration->range.low);
+			}
 		}
 		else {
-			if(interpolationMethod == CCN_INTERP_CUBIC) {
-				ccnStore(noise->values + i, configuration->storeMethod, ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], factor) * multiplier + configuration->range.low);
+			if(factor == 0) {
+				ccnStore(noise->values + i, configuration->storeMethod, xValues[index] * multiplier + configuration->range.low);
 			}
 			else {
 				ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(xValues[index], xValues[index + noise->width], factor, interpolationMethod) * multiplier + configuration->range.low);
