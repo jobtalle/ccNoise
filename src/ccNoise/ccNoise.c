@@ -218,6 +218,8 @@ int ccnGenerateWorleyNoise2D(
 	unsigned int i, j;
 	unsigned int pointId = 0;
 	unsigned int pointListSize = points * 9;
+	unsigned int xPeriod = configuration->tileConfiguration.xPeriod;
+	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
 	ccnPoint offset;
 
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
@@ -227,13 +229,13 @@ int ccnGenerateWorleyNoise2D(
 
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 
-	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) configuration->tileConfiguration.xPeriod = configuration->tileConfiguration.yPeriod = CCN_INFINITE;
+	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) xPeriod = yPeriod = CCN_INFINITE;
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
 			ccRandomizer32 randomizer;
 
-			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(configuration->seed, ccnWrapCoordinate(configuration->x + offset.x, configuration->tileConfiguration.yPeriod), ccnWrapCoordinate(configuration->y + offset.y, configuration->tileConfiguration.yPeriod)));
+			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(configuration->seed, ccnWrapCoordinate(configuration->x + offset.x, xPeriod), ccnWrapCoordinate(configuration->y + offset.y, yPeriod)));
 
 			for(i = 0; i < points; i++) {
 				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * noise->width);
@@ -293,6 +295,8 @@ int ccnGeneratePerlinNoise2D(
 	unsigned int ySteps = noise->height / scale;
 	unsigned int totalSteps = xSteps * (ySteps + 1);
 	unsigned int size = noise->width * noise->height;
+	unsigned int xPeriod = configuration->tileConfiguration.xPeriod;
+	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
 	unsigned int i;
 
 	float multiplier = configuration->range.high - configuration->range.low;
@@ -301,16 +305,16 @@ int ccnGeneratePerlinNoise2D(
 	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
-		configuration->tileConfiguration.xPeriod = configuration->tileConfiguration.yPeriod = CCN_INFINITE;
+		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
-		configuration->tileConfiguration.xPeriod *= xSteps - 1;
-		configuration->tileConfiguration.yPeriod *= ySteps;
+		xPeriod *= xSteps - 1;
+		yPeriod *= ySteps;
 	}
 
 	for(i = 0; i < totalSteps; i++) {
 		int Y = i / xSteps;
-		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i - Y * xSteps + offset.x, configuration->tileConfiguration.xPeriod), ccnWrapCoordinate(Y + offset.y, configuration->tileConfiguration.yPeriod)) * CC_TRI_PI_DOUBLE);
+		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i - Y * xSteps + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
 		vectors[(i << 1) + 1] = (float)sin(radians);
