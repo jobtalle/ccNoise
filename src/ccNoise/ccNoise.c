@@ -123,6 +123,10 @@ int ccnGenerateValueNoise2D(
 
 	ccnPoint offset;
 
+#ifdef _DEBUG
+	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
+#endif
+
 	offsetHeight = octaveHeight + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
 	xValues = malloc(noise->width * offsetHeight * sizeof(float));
 
