@@ -52,7 +52,7 @@ static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distan
 static int ccnWrapCoordinate(int coordinate, unsigned int period) {
 	int positiveDeviation, negativeDeviation;
 
-	if(period == CCN_INFINITE) return coordinate;
+	if(period == CCN_INFINITE || period == 0) return coordinate;
 
 	positiveDeviation = period >> 1;
 	negativeDeviation = -(int)(period - positiveDeviation);
@@ -299,8 +299,24 @@ int ccnGeneratePerlinNoise2D(
 	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
 	unsigned int i;
 
+	float xScale, yScale;
 	float multiplier = configuration->range.high - configuration->range.low;
-	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
+	float *vectors;
+
+	int factoredX = noise->width < scale;
+	int factoredY = noise->height < scale;
+
+	if(factoredX) {
+		xScale = (float)noise->width / scale;
+		totalSteps *= (scale / noise->width);
+	}
+
+	if(factoredY) {
+		yScale = (float)noise->height / scale;
+		totalSteps *= (scale / noise->height);
+	}
+
+	vectors = malloc(sizeof(float)* (totalSteps << 1));
 	
 	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
 
@@ -326,11 +342,14 @@ int ccnGeneratePerlinNoise2D(
 		int xStep = X / scale;
 		int yStep = Y / scale;
 
+		if(factoredX) X += (int)(configuration->x * scale * xScale);
+		if(factoredY) Y += (int)(configuration->y * scale * yScale);
+
 		unsigned int indexTop = (xStep + yStep * xSteps) << 1;
 		unsigned int indexBottom = indexTop + (xSteps << 1);
 
 		float factorX = (float)(X - xStep * scale) / scale;
-
+		
 		float vecX = (float)(X - xStep * scale) / scale;
 		float vecY = (float)(Y - yStep * scale) / scale;
 
