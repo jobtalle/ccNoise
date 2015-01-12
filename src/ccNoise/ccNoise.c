@@ -227,7 +227,9 @@ int ccnGenerateWorleyNoise2D(
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
 
+#ifdef DEBUG
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
+#endif
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) xPeriod = yPeriod = CCN_INFINITE;
 
@@ -307,6 +309,11 @@ int ccnGeneratePerlinNoise2D(
 	int factoredY = noise->height < scale;
 
 	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
+
+#ifdef DEBUG
+	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
+	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
+#endif
 
 	if(factoredX) {
 		xScale = (float)noise->width / scale;

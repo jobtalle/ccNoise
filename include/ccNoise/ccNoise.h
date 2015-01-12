@@ -29,6 +29,7 @@ extern "C"
 
 #define CCN_ERROR_NONE                   0x00
 #define CCN_ERROR_INVALID_METHOD         0x01
+#define CCN_ERROR_NO_POWER_OF_2          0x02
 
 #define ccnNoiseAllocate(noise, w, h) noise.values = malloc(sizeof(float)* w * h); noise.width = w; noise.height = h;
 #define ccnNoiseGet(noise, x, y) noise.values[x + noise.line * y]
