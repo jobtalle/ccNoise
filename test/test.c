@@ -63,7 +63,16 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGeneratePerlinNoise2D(&noise, &config, 256, CCN_INTERP_PERLIN);
+	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
+
+	config.storeMethod = CCN_STORE_MULTIPLY;
+	config.range = (ccnRange){ 0.5f, 1.0f };
+
+	ccnGeneratePerlinNoise2D(&noise, &config, 512, CCN_INTERP_PERLIN);
+
+	config.range = (ccnRange){ 0.0f, 1.0f };
+
+	ccnGenerateValueNoise2D(&noise, &config, 32, CCN_INTERP_CUBIC);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) * 255;

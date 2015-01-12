@@ -306,6 +306,8 @@ int ccnGeneratePerlinNoise2D(
 	int factoredX = noise->width < scale;
 	int factoredY = noise->height < scale;
 
+	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
+
 	if(factoredX) {
 		xScale = (float)noise->width / scale;
 		totalSteps *= (scale / noise->width);
@@ -317,8 +319,6 @@ int ccnGeneratePerlinNoise2D(
 	}
 
 	vectors = malloc(sizeof(float)* (totalSteps << 1));
-	
-	ccnPoint offset = (ccnPoint){ configuration->x * (xSteps - 1), configuration->y * ySteps };
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
 		xPeriod = yPeriod = CCN_INFINITE;
