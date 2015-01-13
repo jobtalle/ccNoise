@@ -12,7 +12,7 @@
 #include <gl/GL.h>
 
 #define WIDTH  512
-#define HEIGHT 256
+#define HEIGHT 1024
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
@@ -32,10 +32,8 @@ static void generate(int left, int top)
 
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
-	/*
-
 	config.seed = seed;
-	config.range = (ccnRange){ 0.4f, 0.0f };
+	config.range = (ccnRange){ 0, 1.0f };
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?0:1;
 	config.y = top?0:1;
@@ -44,29 +42,11 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateWorleyNoise2D(&noise, &config, 60, 0, 0, 45, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
-
-	config.range = (ccnRange){ 0.0f, 3.6f };
-	config.storeMethod = CCN_STORE_ADD;
-
-	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
-
-	*/
-
-	config.seed = seed;
-	config.range = (ccnRange){ -1.0f, 1.0f };
-	config.storeMethod = CCN_STORE_SET;
-	config.x = left?0:1;
-	config.y = top?0:1;
-
-	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 2;
-	config.tileConfiguration.yPeriod = 2;
-
-	ccnGenerateValueNoise2D(&noise, &config, 64, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise2D(&noise, &config, 128, CCN_INTERP_COSINE);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(fabs(noise.values[i]) * 255);
+		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
+		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
 		pixels[i].a = 255;
 	}
 

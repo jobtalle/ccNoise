@@ -10,7 +10,8 @@
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
 
-#define _CCN_PERLIN_NORMALIZER 0.707107
+#define _CCN_PERLIN_NORMALIZER         0.707107
+#define _CCN_MANHATTAN_DISTANCE_FACTOR 1.414213
 
 typedef struct {
 	int x, y;
@@ -234,7 +235,7 @@ int ccnGenerateWorleyNoise2D(
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
 	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
 
-	unsigned int maxManhattanDistance = (unsigned int)(high * (2 / sqrt(2)));
+	unsigned int maxManhattanDistance = (unsigned int)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
 
 #ifdef _DEBUG
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
