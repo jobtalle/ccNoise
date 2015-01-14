@@ -11,8 +11,8 @@
 
 #include <gl/GL.h>
 
-#define WIDTH  512
-#define HEIGHT 512
+#define WIDTH  256
+#define HEIGHT 256
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
@@ -33,18 +33,14 @@ static void generate(int left, int top)
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 0.5f };
+	config.range = (ccnRange){ 0, 1 };
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?-4:-3;
 	config.y = top?-29:-28;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 4;
-	config.tileConfiguration.yPeriod = 4;
-
-	ccnGeneratePerlinNoise2D(&noise, &config, 1024, CCN_INTERP_PERLIN);
-
-	config.storeMethod = CCN_STORE_ADD;
+	config.tileConfiguration.xPeriod = 2;
+	config.tileConfiguration.yPeriod = 2;
 
 	ccnGeneratePerlinNoise2D(&noise, &config, 64, CCN_INTERP_PERLIN);
 
@@ -91,7 +87,7 @@ int main(int argc, char **argv)
 
 	ccDisplayInitialize();
 
-	ccWindowCreate((ccRect){ 0, 0, WIDTH, HEIGHT }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
+	ccWindowCreate((ccRect){ 0, 0, WIDTH << 1, HEIGHT << 1}, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
 	ccWindowSetCentered();
 	//ccWindowSetFullscreen(CC_FULLSCREEN_CURRENT_DISPLAY);
 

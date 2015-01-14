@@ -347,7 +347,7 @@ int ccnGeneratePerlinNoise2D(
 	}
 	else{
 		xPeriod = (unsigned int)(xPeriod * ((float)noise->width / scale));
-		yPeriod = (unsigned int)(xPeriod * ((float)noise->height / scale));
+		yPeriod = (unsigned int)(yPeriod * ((float)noise->height / scale));
 	}
 
 	for(i = 0; i < totalSteps; i++) {
