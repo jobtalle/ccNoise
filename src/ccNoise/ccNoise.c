@@ -89,6 +89,10 @@ static void ccnStore(float *buffer, ccnStoreMethod method, float value)
 	}
 }
 
+static int ccnFloorMod(int x, int y) {
+	return x >= 0?x % y:y + ((x + 1) % y) - 1;
+}
+
 int ccnGenerateWhiteNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration)
@@ -306,43 +310,34 @@ int ccnGeneratePerlinNoise2D(
 	unsigned int scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int xSteps = noise->width / scale;
-	unsigned int ySteps = noise->height / scale;
-	unsigned int totalSteps;
+	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
+	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
+	unsigned int totalSteps = (xSteps + 1) * (ySteps + 1);
 	unsigned int size = noise->width * noise->height;
 	unsigned int xPeriod = configuration->tileConfiguration.xPeriod;
 	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
+	unsigned int xOffset = 0;
+	unsigned int yOffset = 0;
 	unsigned int i;
 
-	float xScale, yScale;
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *vectors;
 
-	int factoredX = noise->width < scale;
-	int factoredY = noise->height < scale;
-
-	ccnPoint offset;
-
-	if(xSteps == 0) xSteps = 1;
-	if(ySteps == 0) ySteps = 1;
-	totalSteps = (xSteps + 1) * (ySteps + 1);
-
-	offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
-
-	offset.x >>= 1;
-	offset.y >>= 1;
+	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
 #ifdef _DEBUG
 	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
 	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
 #endif
 
-	if(factoredX) {
-		xScale = (float)noise->width / scale;
+	if(noise->width < scale) {
+		offset.x = (int)floor(offset.x * ((float)noise->width / scale));
+		xOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
 	}
 
-	if(factoredY) {
-		yScale = (float)noise->height / scale;
+	if(noise->height < scale) {
+		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
+		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
 	}
 
 	vectors = malloc(sizeof(float)* (totalSteps << 1));
@@ -351,8 +346,8 @@ int ccnGeneratePerlinNoise2D(
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
-		xPeriod *= xSteps;
-		yPeriod *= ySteps;
+		xPeriod = (unsigned int)(xPeriod * ((float)noise->width / scale));
+		yPeriod = (unsigned int)(xPeriod * ((float)noise->height / scale));
 	}
 
 	for(i = 0; i < totalSteps; i++) {
@@ -370,8 +365,8 @@ int ccnGeneratePerlinNoise2D(
 		int xStep = X / scale;
 		int yStep = Y / scale;
 
-		if(factoredX) X += (int)((configuration->x % 2) * scale * xScale); // TODO: these are fixed values
-		if(factoredY) Y += (int)((configuration->y % 2) * scale * yScale);
+		X += xOffset;
+		Y += yOffset;
 
 		unsigned int indexTop = (xStep + yStep * (xSteps + 1)) << 1;
 		unsigned int indexBottom = indexTop + ((xSteps + 1) << 1);

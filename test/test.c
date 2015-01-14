@@ -33,20 +33,24 @@ static void generate(int left, int top)
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 1.0f };
+	config.range = (ccnRange){ 0, 0.5f };
 	config.storeMethod = CCN_STORE_SET;
-	config.x = left?1:2;
-	config.y = top?9:10;
+	config.x = left?-4:-3;
+	config.y = top?-29:-28;
 
-	config.tileConfiguration.tileMethod = CCN_TILE_NOT;
+	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
 	config.tileConfiguration.xPeriod = 4;
 	config.tileConfiguration.yPeriod = 4;
 
 	ccnGeneratePerlinNoise2D(&noise, &config, 1024, CCN_INTERP_PERLIN);
 
+	config.storeMethod = CCN_STORE_ADD;
+
+	ccnGeneratePerlinNoise2D(&noise, &config, 64, CCN_INTERP_PERLIN);
+
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
+		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
 		pixels[i].a = 255;
 	}
 
@@ -87,7 +91,7 @@ int main(int argc, char **argv)
 
 	ccDisplayInitialize();
 
-	ccWindowCreate((ccRect){ 0, 0, WIDTH << 1, HEIGHT << 1 }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
+	ccWindowCreate((ccRect){ 0, 0, WIDTH, HEIGHT }, "ccNoise test", CC_WINDOW_FLAG_NORESIZE);
 	ccWindowSetCentered();
 	//ccWindowSetFullscreen(CC_FULLSCREEN_CURRENT_DISPLAY);
 
