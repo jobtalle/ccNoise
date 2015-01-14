@@ -12,7 +12,7 @@
 #include <gl/GL.h>
 
 #define WIDTH  512
-#define HEIGHT 1024
+#define HEIGHT 512
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
@@ -35,18 +35,18 @@ static void generate(int left, int top)
 	config.seed = seed;
 	config.range = (ccnRange){ 0, 1.0f };
 	config.storeMethod = CCN_STORE_SET;
-	config.x = left?0:1;
-	config.y = top?0:1;
+	config.x = left?1:2;
+	config.y = top?9:10;
 
-	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 2;
-	config.tileConfiguration.yPeriod = 2;
+	config.tileConfiguration.tileMethod = CCN_TILE_NOT;
+	config.tileConfiguration.xPeriod = 4;
+	config.tileConfiguration.yPeriod = 4;
 
-	ccnGenerateValueNoise2D(&noise, &config, 128, CCN_INTERP_COSINE);
+	ccnGeneratePerlinNoise2D(&noise, &config, 1024, CCN_INTERP_PERLIN);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
-		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
+		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
 		pixels[i].a = 255;
 	}
 
@@ -103,23 +103,23 @@ int main(int argc, char **argv)
 	glGenTextures(1, &textureRightBottom);
 
 	glBindTexture(GL_TEXTURE_2D, textureLeftTop);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, textureRightTop);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, textureLeftBottom);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glBindTexture(GL_TEXTURE_2D, textureRightBottom);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
