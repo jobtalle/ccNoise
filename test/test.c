@@ -33,7 +33,7 @@ static void generate(int left, int top)
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 1 };
+	config.range = (ccnRange){ -1, 1 };
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?-4:-3;
 	config.y = top?-29:-28;
@@ -42,11 +42,11 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGeneratePerlinNoise2D(&noise, &config, 64, CCN_INTERP_PERLIN);
+	ccnGenerateValueNoise2D(&noise, &config, 512, CCN_INTERP_CUBIC);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) > 0.4f || fabs(noise.values[i]) < 0.1f ?230:50;
-		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.2f ?230:50;
+		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
 		pixels[i].a = 255;
 	}
 

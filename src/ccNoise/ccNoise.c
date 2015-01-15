@@ -117,8 +117,8 @@ int ccnGenerateValueNoise2D(
 	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = noise->width * noise->height;
-	unsigned int octaveWidth = noise->width / scale;
-	unsigned int octaveHeight = noise->height / scale;
+	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
+	unsigned int ySteps = (unsigned int)ceil((float)noise->width / scale);
 	unsigned int offsetHeight;
 	unsigned int i, j, k;
 	unsigned int yOffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
@@ -135,11 +135,11 @@ int ccnGenerateValueNoise2D(
 	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
 #endif
 
-	offsetHeight = octaveHeight + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
+	offsetHeight = ySteps + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
 	xValues = malloc(noise->width * offsetHeight * sizeof(float));
 
-	offset.x = configuration->tileConfiguration.xPeriod * octaveWidth;
-	offset.y = configuration->tileConfiguration.yPeriod * octaveHeight;
+	offset.x = configuration->tileConfiguration.xPeriod * xSteps;
+	offset.y = configuration->tileConfiguration.yPeriod * ySteps;
 
 	for(i = 0; i < offsetHeight; i++) {
 		for(j = 0; j < noise->width; j++) {
@@ -153,7 +153,7 @@ int ccnGenerateValueNoise2D(
 				if(factor == 0) {
 					if(j == 0) {
 						for(k = 0; k < 4; k++) {
-							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
+							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
 						}
 					}
 					else {
@@ -161,7 +161,7 @@ int ccnGenerateValueNoise2D(
 							bufferedValues[k] = bufferedValues[k + 1];
 						}
 
-						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
+						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
 					}
 
 					xValues[i * noise->width + j] = bufferedValues[1];
@@ -175,13 +175,13 @@ int ccnGenerateValueNoise2D(
 
 				if(factor == 0) {
 					if(j == 0) {
-						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
+						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
 					}
 					else {
 						bufferedValues[0] = bufferedValues[1];
 					}
 
-					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + configuration->x * octaveWidth, offset.x), ccnWrapCoordinate(i + configuration->y * octaveHeight, offset.y));
+					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
 
 					xValues[i * noise->width + j] = bufferedValues[0];
 				}
@@ -314,8 +314,8 @@ int ccnGeneratePerlinNoise2D(
 	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
 	unsigned int totalSteps = (xSteps + 1) * (ySteps + 1);
 	unsigned int size = noise->width * noise->height;
-	unsigned int xPeriod = configuration->tileConfiguration.xPeriod;
-	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
+	unsigned int xPeriod;
+	unsigned int yPeriod;
 	unsigned int xOffset = 0;
 	unsigned int yOffset = 0;
 	unsigned int i;
@@ -346,8 +346,8 @@ int ccnGeneratePerlinNoise2D(
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
-		xPeriod = (unsigned int)(xPeriod * ((float)noise->width / scale));
-		yPeriod = (unsigned int)(yPeriod * ((float)noise->height / scale));
+		xPeriod = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		yPeriod = (unsigned int)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
 	}
 
 	for(i = 0; i < totalSteps; i++) {
