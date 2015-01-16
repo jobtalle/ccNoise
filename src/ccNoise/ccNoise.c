@@ -144,6 +144,7 @@ int ccnGenerateValueNoise2D(
 	if(noise->height < scale) {
 		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
+		printf("%d\n", yOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
@@ -208,23 +209,14 @@ int ccnGenerateValueNoise2D(
 		unsigned int octY = Y / scale;
 		unsigned int index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
 
-		float factor = (float)(Y + yOffset - octY * scale) / scale;
+		float factor = (float)(Y - octY * scale) / scale;
+		float interpFactor = factor + (float)yOffset / scale;
 
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
-			if(factor == 0) {
-				ccnStore(noise->values + i, configuration->storeMethod, (xValues[index] * .5f + 0.25f) * multiplier + configuration->range.low);
-			}
-			else {
-				ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], factor) * .5f + 0.25f) * multiplier + configuration->range.low);
-			}
+			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], interpFactor) * .5f + 0.25f) * multiplier + configuration->range.low);
 		}
 		else {
-			if(factor == 0) {
-				ccnStore(noise->values + i, configuration->storeMethod, xValues[index] * multiplier + configuration->range.low);
-			}
-			else {
-				ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(xValues[index], xValues[index + noise->width], factor, interpolationMethod) * multiplier + configuration->range.low);
-			}
+			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(xValues[index], xValues[index + noise->width], interpFactor, interpolationMethod) * multiplier + configuration->range.low);
 		}
 	}
 		

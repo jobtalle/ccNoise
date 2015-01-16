@@ -11,8 +11,8 @@
 
 #include <gl/GL.h>
 
-#define WIDTH  256
-#define HEIGHT 256
+#define WIDTH  512
+#define HEIGHT 512
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
@@ -33,16 +33,18 @@ static void generate(int left, int top)
 	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ -1, 1 };
+	config.range = (ccnRange){ -4, 4};
 	config.storeMethod = CCN_STORE_SET;
-	config.x = left?-4:-3;
-	config.y = top?-29:-28;
+	config.x = left?0:1;
+	config.y = top?0:1;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 4;
-	config.tileConfiguration.yPeriod = 4;
+	config.tileConfiguration.xPeriod = 2;
+	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateValueNoise2D(&noise, &config, 512, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise2D(&noise, &config, 256, CCN_INTERP_CUBIC);
+
+	//ccnGenerateValueNoise2D(&noise, &config, 128, CCN_INTERP_CUBIC);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.2f ?230:50;
