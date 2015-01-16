@@ -12,7 +12,7 @@
 #include <gl/GL.h>
 
 #define WIDTH  512
-#define HEIGHT 512
+#define HEIGHT 256
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 

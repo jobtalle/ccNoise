@@ -118,7 +118,7 @@ int ccnGenerateValueNoise2D(
 {
 	unsigned int size = noise->width * noise->height;
 	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
-	unsigned int ySteps = (unsigned int)ceil((float)noise->width / scale);
+	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
 	unsigned int offsetHeight;
 	unsigned int xPeriod;
 	unsigned int yPeriod;
@@ -144,7 +144,6 @@ int ccnGenerateValueNoise2D(
 	if(noise->height < scale) {
 		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
-		printf("%d\n", yOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
