@@ -39,8 +39,8 @@ static void generate(int left, int top)
 	config.y = top?-29:-28;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 2;
-	config.tileConfiguration.yPeriod = 2;
+	config.tileConfiguration.xPeriod = 4;
+	config.tileConfiguration.yPeriod = 4;
 
 	ccnGenerateValueNoise2D(&noise, &config, 512, CCN_INTERP_CUBIC);
 

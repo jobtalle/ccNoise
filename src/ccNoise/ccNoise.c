@@ -120,32 +120,49 @@ int ccnGenerateValueNoise2D(
 	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
 	unsigned int ySteps = (unsigned int)ceil((float)noise->width / scale);
 	unsigned int offsetHeight;
+	unsigned int xPeriod;
+	unsigned int yPeriod;
+	unsigned int xOffset = 0;
+	unsigned int yOffset = 0;
+	unsigned int interpolationYoffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
 	unsigned int i, j, k;
-	unsigned int yOffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
-	/*
-	int factoredX = noise->width < scale && (noise->width * startX) % scale != 0;
-	int factoredY = noise->height < scale && (noise->height * startY) % scale != 0;
-	*/
+
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *xValues;
 
-	ccnPoint offset;
+	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
 #ifdef _DEBUG
 	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
 #endif
 
-	offsetHeight = ySteps + yOffset + (interpolationMethod == CCN_INTERP_CUBIC?2:1);
-	xValues = malloc(noise->width * offsetHeight * sizeof(float));
+	if(noise->width < scale) {
+		offset.x = (int)floor(offset.x * ((float)noise->width / scale));
+		xOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
+	}
 
-	offset.x = configuration->tileConfiguration.xPeriod * xSteps;
-	offset.y = configuration->tileConfiguration.yPeriod * ySteps;
+	if(noise->height < scale) {
+		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
+		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
+	}
+
+	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
+		xPeriod = yPeriod = CCN_INFINITE;
+	}
+	else{
+		xPeriod = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		yPeriod = (unsigned int)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
+	}
+
+	offsetHeight = ySteps + (interpolationMethod == CCN_INTERP_CUBIC?3:1);
+	xValues = malloc(noise->width * offsetHeight * sizeof(float));
 
 	for(i = 0; i < offsetHeight; i++) {
 		for(j = 0; j < noise->width; j++) {
 			unsigned int octX = j / scale;
 
 			float factor = (float)(j - octX * scale) / scale;
+			float interpFactor = factor + (float)xOffset / scale;
 
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
 				float bufferedValues[4];
@@ -153,7 +170,7 @@ int ccnGenerateValueNoise2D(
 				if(factor == 0) {
 					if(j == 0) {
 						for(k = 0; k < 4; k++) {
-							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
+							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
 						}
 					}
 					else {
@@ -161,33 +178,27 @@ int ccnGenerateValueNoise2D(
 							bufferedValues[k] = bufferedValues[k + 1];
 						}
 
-						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
+						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
 					}
+				}
 
-					xValues[i * noise->width + j] = bufferedValues[1];
-				}
-				else {
-					xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor);
-				}
+				xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], interpFactor);
 			}
 			else {
 				float bufferedValues[2];
 
 				if(factor == 0) {
 					if(j == 0) {
-						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
+						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
 					}
 					else {
 						bufferedValues[0] = bufferedValues[1];
 					}
 
-					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + configuration->x * xSteps, offset.x), ccnWrapCoordinate(i + configuration->y * ySteps, offset.y));
-
-					xValues[i * noise->width + j] = bufferedValues[0];
+					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
 				}
-				else {
-					xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor, interpolationMethod);
-				}
+				
+				xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], interpFactor, interpolationMethod);
 			}
 		}
 	}
@@ -195,9 +206,9 @@ int ccnGenerateValueNoise2D(
 	for(i = 0; i < size; i++) {
 		unsigned int Y = i / noise->width;
 		unsigned int octY = Y / scale;
-		unsigned int index = (i - Y * noise->width) + (octY + yOffset) * noise->width;
+		unsigned int index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
 
-		float factor = (float)(Y - octY * scale) / scale;
+		float factor = (float)(Y + yOffset - octY * scale) / scale;
 
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
 			if(factor == 0) {
