@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
 #include <stdio.h>
-#include <stdlib.h>
+#include <assert.h>
 
 #include <ccNoise/ccnoise.h>
 #include <ccRandom/ccRandom.h>
@@ -93,9 +92,9 @@ static int ccnFloorMod(int x, int y) {
 	return x >= 0?x % y:y + ((x + 1) % y) - 1;
 }
 
-int ccnGenerateWhiteNoise2D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration)
+void ccnGenerateWhiteNoise2D(
+     ccnNoise *noise,
+	 ccnNoiseConfiguration *configuration)
 {
 	unsigned int size = noise->width * noise->height;
 	unsigned int i;
@@ -106,15 +105,13 @@ int ccnGenerateWhiteNoise2D(
 		int X = i - Y * noise->width;
 		ccnStore(noise->values + i, configuration->storeMethod, ccrGenerateFloatCoordinate(configuration->seed, X, Y) * multiplier + configuration->range.low);
 	}
-
-	return CCN_ERROR_NONE;
 }
 
-int ccnGenerateValueNoise2D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
-	ccnInterpolationMethod interpolationMethod)
+void ccnGenerateValueNoise2D(
+     ccnNoise *noise,
+	 ccnNoiseConfiguration *configuration,
+	 unsigned int scale,
+	 ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = noise->width * noise->height;
 	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
@@ -133,7 +130,7 @@ int ccnGenerateValueNoise2D(
 	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
 #ifdef _DEBUG
-	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
+	assert(!(scale & (scale - 1)));
 #endif
 
 	if(noise->width < scale) {
@@ -162,7 +159,6 @@ int ccnGenerateValueNoise2D(
 			unsigned int octX = j / scale;
 
 			float factor = (float)(j - octX * scale) / scale;
-			float interpFactor = factor + (float)xOffset / scale;
 
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
 				float bufferedValues[4];
@@ -182,7 +178,7 @@ int ccnGenerateValueNoise2D(
 					}
 				}
 
-				xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], interpFactor);
+				xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)xOffset / scale);
 			}
 			else {
 				float bufferedValues[2];
@@ -198,7 +194,7 @@ int ccnGenerateValueNoise2D(
 					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
 				}
 				
-				xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], interpFactor, interpolationMethod);
+				xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)xOffset / scale, interpolationMethod);
 			}
 		}
 	}
@@ -220,18 +216,16 @@ int ccnGenerateValueNoise2D(
 	}
 		
 	free(xValues);
-
-	return CCN_ERROR_NONE;
 }
 
-int ccnGenerateWorleyNoise2D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	unsigned int points,
-	unsigned int n,
-	int low, int high,
-	ccnDistanceMethod distanceMethod,
-	ccnInterpolationMethod interpolationMethod)
+void ccnGenerateWorleyNoise2D(
+     ccnNoise *noise,
+	 ccnNoiseConfiguration *configuration,
+	 unsigned int points,
+	 unsigned int n,
+	 int low, int high,
+	 ccnDistanceMethod distanceMethod,
+	 ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = noise->width * noise->height;
 	unsigned int i, j;
@@ -247,7 +241,7 @@ int ccnGenerateWorleyNoise2D(
 	unsigned int maxManhattanDistance = (unsigned int)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
 
 #ifdef _DEBUG
-	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
+	assert(interpolationMethod != CCN_INTERP_CUBIC);
 #endif
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) xPeriod = yPeriod = CCN_INFINITE;
@@ -302,15 +296,13 @@ int ccnGenerateWorleyNoise2D(
 
 	free(pointList);
 	free(pointsDistances);
-
-	return CCN_ERROR_NONE;
 }
 
-int ccnGeneratePerlinNoise2D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
-	ccnInterpolationMethod interpolationMethod)
+void ccnGeneratePerlinNoise2D(
+     ccnNoise *noise,
+	 ccnNoiseConfiguration *configuration,
+	 unsigned int scale,
+	 ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
 	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
@@ -323,13 +315,13 @@ int ccnGeneratePerlinNoise2D(
 	unsigned int i;
 
 	float multiplier = configuration->range.high - configuration->range.low;
-	float *vectors;
+	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
 
 	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
 #ifdef _DEBUG
-	if(interpolationMethod == CCN_INTERP_CUBIC) return CCN_ERROR_INVALID_METHOD;
-	if(scale & (scale - 1)) return CCN_ERROR_NO_POWER_OF_2;
+	assert(interpolationMethod != CCN_INTERP_CUBIC);
+	assert(!(scale & (scale - 1)));
 #endif
 
 	if(noise->width < scale) {
@@ -341,8 +333,6 @@ int ccnGeneratePerlinNoise2D(
 		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
 	}
-
-	vectors = malloc(sizeof(float)* (totalSteps << 1));
 
 	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
 		xPeriod = yPeriod = CCN_INFINITE;
@@ -392,6 +382,4 @@ int ccnGeneratePerlinNoise2D(
 	}
 
 	free(vectors);
-
-	return CCN_ERROR_NONE;
 }
