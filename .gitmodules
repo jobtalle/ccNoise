@@ -1,0 +1,9 @@
+[submodule "ccRandom"]
+	path = ccRandom
+	url = https://github.com/jobtalle/ccRandom.git
+[submodule "ccSort"]
+	path = ccSort
+	url = https://github.com/jobtalle/ccSort.git
+[submodule "ccTrigonometry"]
+	path = ccTrigonometry
+	url = https://github.com/jobtalle/ccTrigonometry.git
