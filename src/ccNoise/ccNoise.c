@@ -117,6 +117,10 @@ void ccnGenerateValueNoise1D(
 	unsigned int xSteps = (unsigned int)ceil((float)size / scale);
 	unsigned int i;
 
+#ifdef _DEBUG
+	assert(!(scale & (scale - 1)));
+#endif
+
 	for(i = 0; i < size; i++) {
 		ccnStore(noise->values + i, configuration->storeMethod, 0.5f);
 	}
@@ -141,6 +145,7 @@ void ccnGenerateValueNoise2D(
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *xValues;
+	float *bufferedValues;
 
 	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
@@ -168,6 +173,7 @@ void ccnGenerateValueNoise2D(
 
 	offsetHeight = ySteps + (interpolationMethod == CCN_INTERP_CUBIC?3:1);
 	xValues = malloc(noise->width * offsetHeight * sizeof(float));
+	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
 
 	for(i = 0; i < offsetHeight; i++) {
 		for(j = 0; j < noise->width; j++) {
@@ -176,8 +182,6 @@ void ccnGenerateValueNoise2D(
 			float factor = (float)(j - octX * scale) / scale;
 
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
-				float bufferedValues[4];
-
 				if(factor == 0) {
 					if(j == 0) {
 						for(k = 0; k < 4; k++) {
@@ -196,8 +200,6 @@ void ccnGenerateValueNoise2D(
 				xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)xOffset / scale);
 			}
 			else {
-				float bufferedValues[2];
-
 				if(factor == 0) {
 					if(j == 0) {
 						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
@@ -231,6 +233,7 @@ void ccnGenerateValueNoise2D(
 	}
 		
 	free(xValues);
+	free(bufferedValues);
 }
 
 void ccnGenerateWorleyNoise2D(

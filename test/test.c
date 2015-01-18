@@ -30,7 +30,7 @@ static void generate(int left, int top)
 	ccnNoise noise;
 	ccnNoiseConfiguration config;
 
-	ccnNoiseAllocate1D(noise, WIDTH);
+	ccnNoiseAllocate2D(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
 	config.range = (ccnRange){ 0, 1};
@@ -42,7 +42,7 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateValueNoise1D(&noise, &config, 64, CCN_INTERP_LINEAR);
+	ccnGenerateValueNoise2D(&noise, &config, 64, CCN_INTERP_LINEAR);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.1f ?230:50;
