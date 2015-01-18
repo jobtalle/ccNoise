@@ -117,8 +117,8 @@ void ccnGenerateValueNoise1D(
 	unsigned int steps = (unsigned int)ceil((float)size / scale);
 	unsigned int i, j;
 	unsigned int period;
-	unsigned int offset = 0;
-	int coordinateOffset = configuration->x * steps; // TODO: refactor this shite
+	unsigned int interpolationOffset = 0;
+	int coordinateOffset = configuration->x * steps;
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *bufferedValues;
@@ -129,7 +129,7 @@ void ccnGenerateValueNoise1D(
 
 	if(noise->width < scale) {
 		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
-		offset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
+		interpolationOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
 	}
 
 	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
@@ -161,7 +161,7 @@ void ccnGenerateValueNoise1D(
 				}
 			}
 
-			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)offset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)interpolationOffset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
 		}
 		else {
 			if(factor == 0) {
@@ -177,7 +177,7 @@ void ccnGenerateValueNoise1D(
 				bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + 1 + coordinateOffset, period), 0);
 			}
 
-			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)offset / scale, interpolationMethod) * multiplier + configuration->range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)interpolationOffset / scale, interpolationMethod) * multiplier + configuration->range.low);
 		}
 	}
 
@@ -205,19 +205,19 @@ void ccnGenerateValueNoise2D(
 	float *xValues;
 	float *bufferedValues;
 
-	ccnPoint offset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
+	ccnPoint coordinateOffset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
 #ifdef _DEBUG
 	assert(!(scale & (scale - 1)));
 #endif
 
 	if(noise->width < scale) {
-		offset.x = (int)floor(offset.x * ((float)noise->width / scale));
+		coordinateOffset.x = (int)floor(coordinateOffset.x * ((float)noise->width / scale));
 		xOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
 	}
 
 	if(noise->height < scale) {
-		offset.y = (int)floor(offset.y * ((float)noise->height / scale));
+		coordinateOffset.y = (int)floor(coordinateOffset.y * ((float)noise->height / scale));
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
 	}
 
@@ -243,7 +243,7 @@ void ccnGenerateValueNoise2D(
 				if(factor == 0) {
 					if(j == 0) {
 						for(k = 0; k < 4; k++) {
-							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
+							bufferedValues[k] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX - 1 + k + coordinateOffset.x, xPeriod), ccnWrapCoordinate(i + coordinateOffset.y, yPeriod));
 						}
 					}
 					else {
@@ -251,7 +251,7 @@ void ccnGenerateValueNoise2D(
 							bufferedValues[k] = bufferedValues[k + 1];
 						}
 
-						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
+						bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 2 + coordinateOffset.x, xPeriod), ccnWrapCoordinate(i + coordinateOffset.y, yPeriod));
 					}
 				}
 
@@ -260,13 +260,13 @@ void ccnGenerateValueNoise2D(
 			else {
 				if(factor == 0) {
 					if(j == 0) {
-						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
+						bufferedValues[0] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + coordinateOffset.x, xPeriod), ccnWrapCoordinate(i + coordinateOffset.y, yPeriod));
 					}
 					else {
 						bufferedValues[0] = bufferedValues[1];
 					}
 
-					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + offset.x, xPeriod), ccnWrapCoordinate(i + offset.y, yPeriod));
+					bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(octX + 1 + coordinateOffset.x, xPeriod), ccnWrapCoordinate(i + coordinateOffset.y, yPeriod));
 				}
 				
 				xValues[i * noise->width + j] = ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)xOffset / scale, interpolationMethod);

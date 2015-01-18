@@ -42,12 +42,14 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 4;
 	config.tileConfiguration.yPeriod = 2;
 
-#define MAXSCALE 512
+#define MAXSCALE 256
+#define MINSCALE 4
 
-	for(unsigned int scale = MAXSCALE; scale != 64; scale >>= 1) {
+	for(unsigned int scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_PERLIN);
+		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_COSINE);
 		config.storeMethod = CCN_STORE_ADD;
+		config.seed++;
 	}
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
