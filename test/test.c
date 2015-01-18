@@ -9,7 +9,11 @@
 #include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
 
+#ifdef WINDOWS
 #include <gl/GL.h>
+#else
+#include <GL/glew.h>
+#endif
 
 #define WIDTH  512
 #define HEIGHT 256
@@ -45,21 +49,23 @@ static void generate(int left, int top)
 #define MAXSCALE 256
 #define MINSCALE 4
 
-	for(unsigned int scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
+	unsigned int scale;
+	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
 		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_COSINE);
 		config.storeMethod = CCN_STORE_ADD;
 		config.seed++;
 	}
-
-	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
+	
+	unsigned int i;
+	for(i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.1f ?230:50;
 		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
 		pixels[i].r = pixels[i].g = pixels[i].b = 0;
 		pixels[i].a = 255;
 	}
 
-	for(unsigned int i = 0; i < WIDTH; i++) {
+	for(i = 0; i < WIDTH; i++) {
 		int index = i + (int)(noise.values[i] * (HEIGHT - 1)) * WIDTH;
 
 		pixels[index].r = pixels[index].g = pixels[index].b = 255;
