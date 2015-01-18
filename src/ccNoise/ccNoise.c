@@ -107,6 +107,21 @@ void ccnGenerateWhiteNoise2D(
 	}
 }
 
+void ccnGenerateValueNoise1D(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int scale,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int size = noise->width;
+	unsigned int xSteps = (unsigned int)ceil((float)size / scale);
+	unsigned int i;
+
+	for(i = 0; i < size; i++) {
+		ccnStore(noise->values + i, configuration->storeMethod, 0.5f);
+	}
+}
+
 void ccnGenerateValueNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,

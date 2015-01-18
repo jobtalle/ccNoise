@@ -18,8 +18,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -27,9 +25,12 @@ extern "C"
 
 #define CCN_INFINITE UINT32_MAX
 
-#define ccnNoiseAllocate(noise, w, h) noise.values = malloc(sizeof(float)* w * h); noise.width = w; noise.height = h;
-#define ccnNoiseGet(noise, x, y) noise.values[x + noise.line * y]
-#define ccnNoiseSet(noise, x, y, value) noise.values[x + noise.line * y] = value
+#define ccnNoiseAllocate1D(noise, w) noise.values = malloc(sizeof(float)* w); noise.width = w;
+#define ccnNoiseAllocate2D(noise, w, h) noise.values = malloc(sizeof(float)* w * h); noise.width = w; noise.height = h;
+#define ccnNoiseGet1D(noise, x) noise.values[x]
+#define ccnNoiseGet2D(noise, x, y) noise.values[x + noise.line * y]
+#define ccnNoiseSet1D(noise, x, value) noise.values[x] = value;
+#define ccnNoiseSet2D(noise, x, y, value) noise.values[x + noise.line * y] = value
 #define ccnNoiseFree(noise) free(noise.values)
 
 typedef enum {

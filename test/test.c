@@ -11,7 +11,7 @@
 
 #include <gl/GL.h>
 
-#define WIDTH  256
+#define WIDTH  512
 #define HEIGHT 256
 
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
@@ -30,10 +30,10 @@ static void generate(int left, int top)
 	ccnNoise noise;
 	ccnNoiseConfiguration config;
 
-	ccnNoiseAllocate(noise, WIDTH, HEIGHT);
+	ccnNoiseAllocate1D(noise, WIDTH);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 4};
+	config.range = (ccnRange){ 0, 1};
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?-1:0;
 	config.y = top?7:8;
@@ -42,12 +42,18 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateValueNoise2D(&noise, &config, 64, CCN_INTERP_CUBIC);
+	ccnGenerateValueNoise1D(&noise, &config, 64, CCN_INTERP_LINEAR);
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.1f ?230:50;
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		pixels[i].r = pixels[i].g = pixels[i].b = 0;
 		pixels[i].a = 255;
+	}
+
+	for(unsigned int i = 0; i < WIDTH; i++) {
+		int index = i + (int)(noise.values[i] * (HEIGHT - 1)) * WIDTH;
+		pixels[index].r = pixels[index].g = pixels[index].b = 255;
 	}
 
 	ccnNoiseFree(noise);
