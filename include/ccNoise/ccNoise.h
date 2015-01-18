@@ -82,34 +82,72 @@ typedef struct {
 	ccnRange range;
 } ccnNoiseConfiguration;
 
-// Create white noise
+// White noise
+
 void ccnGenerateWhiteNoise2D(
      ccnNoise *noise,
      ccnNoiseConfiguration *configuration);
 
-// Create value noise
+// Value noise
+//
+// scale:               the size of a single interpolation interval
+// interpolationMethod: the method by which the distance value is interpolated
+
+void ccnGenerateValueNoise1D(
+     ccnNoise *noise,
+	 ccnNoiseConfiguration *configuration,
+	 unsigned int scale,
+	 ccnInterpolationMethod interpolationMethod);
+
 void ccnGenerateValueNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
-	 unsigned int scale,                          // The size of a single interpolation interval
-	 ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+	 unsigned int scale,
+	 ccnInterpolationMethod interpolationMethod);
 
-// Create worley noise
+// Worley noise
+//
+// points:              the number of points per noise
+// n:                   worley noise interpolates to the n-th closest point
+// low:                 lowest distance bound for interpolation
+// high:                highest distance bound for interpolation
+// distanceMethod:      the method by which the distance to a point is calculated
+// interpolationMethod: the method by which the distance value is interpolated
+
+void ccnGenerateWorleyNoise1D(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int points,
+	unsigned int n,
+	int low, int high,
+	ccnDistanceMethod distanceMethod,
+	ccnInterpolationMethod interpolationMethod);
+
 void ccnGenerateWorleyNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
-	 unsigned int points,                         // The number of points per noise
-	 unsigned int n,                              // Worley noise interpolates to the n-th closest point
-	 int low, int high,                           // Interpolation occurs between the lowest and highest distance
-	 ccnDistanceMethod distanceMethod,            // The method by which the distance to a point is calculated
-	 ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+	 unsigned int points,
+	 unsigned int n,
+	 int low, int high,
+	 ccnDistanceMethod distanceMethod,
+	 ccnInterpolationMethod interpolationMethod);
 
-// Create perlin noise
+// Perlin noise
+//
+// scale:               the size of a single interpolation interval
+// interpolationMethod: the method by which the distance value is interpolated
+
+void ccnGeneratePerlinNoise1D(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int scale,
+	ccnInterpolationMethod interpolationMethod);
+
 void ccnGeneratePerlinNoise2D(
      ccnNoise *noise,
      ccnNoiseConfiguration *configuration,
-     unsigned int scale,                          // The size of a single interpolation interval
-     ccnInterpolationMethod interpolationMethod); // The method by which the distance value is interpolated
+     unsigned int scale,
+     ccnInterpolationMethod interpolationMethod);
 
 #ifdef __cplusplus
 }
