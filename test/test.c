@@ -35,7 +35,7 @@ static void generate(int left, int top)
 	config.seed = seed;
 	config.range = (ccnRange){ 0, 1};
 	config.storeMethod = CCN_STORE_SET;
-	config.x = left?0:1;
+	config.x = left?-1:0;
 	config.y = top?7:8;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;

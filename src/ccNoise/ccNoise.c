@@ -117,8 +117,8 @@ void ccnGenerateValueNoise1D(
 	unsigned int steps = (unsigned int)ceil((float)size / scale);
 	unsigned int i, j;
 	unsigned int period;
-	unsigned int coordinateOffset = configuration->x * steps; // TODO: refactor this shite
 	unsigned int offset = 0;
+	int coordinateOffset = configuration->x * steps; // TODO: refactor this shite
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *bufferedValues;
@@ -130,6 +130,7 @@ void ccnGenerateValueNoise1D(
 	if(noise->width < scale) {
 		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
 		offset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
+		printf("%d\n", coordinateOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
