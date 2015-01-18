@@ -114,16 +114,61 @@ void ccnGenerateValueNoise1D(
 	ccnInterpolationMethod interpolationMethod)
 {
 	unsigned int size = noise->width;
-	unsigned int xSteps = (unsigned int)ceil((float)size / scale);
-	unsigned int i;
+	unsigned int steps = (unsigned int)ceil((float)size / scale);
+	unsigned int i, j;
+	unsigned int period;
+	unsigned int coordinateOffset = configuration->x * steps; // TODO: refactor this shite
+	unsigned int offset = 0;
+
+	float multiplier = configuration->range.high - configuration->range.low;
+	float *bufferedValues;
 
 #ifdef _DEBUG
 	assert(!(scale & (scale - 1)));
 #endif
 
-	for(i = 0; i < size; i++) {
-		ccnStore(noise->values + i, configuration->storeMethod, 0.5f);
+	if(noise->width < scale) {
+		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
+		offset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
 	}
+
+	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
+		period = CCN_INFINITE;
+	}
+	else {
+		period = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+	}
+
+	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
+
+	for(i = 0; i < size; i++) {
+		unsigned int oct = i / scale;
+		float factor = (float)(i - oct * scale) / scale;
+		
+		if(interpolationMethod == CCN_INTERP_CUBIC) {
+			if(factor == 0) {
+				if(i == 0) {
+					for(j = 0; j < 4; j++) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct - 1 + j + coordinateOffset, period), 0);
+					}
+				}
+				else {
+					for(j = 0; j < 3; j++) {
+						bufferedValues[j] = bufferedValues[j + 1];
+					}
+
+					bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + 2 + coordinateOffset, period), 0);
+				}
+			}
+
+			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)offset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
+		}
+		else {
+
+		}
+	}
+
+	free(bufferedValues);
 }
 
 void ccnGenerateValueNoise2D(
