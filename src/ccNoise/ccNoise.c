@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include <ccNoise/ccnoise.h>
+#include <ccNoise/ccNoise.h>
 #include <ccRandom/ccRandom.h>
 #include <ccTrigonometry/ccTrigonometry.h>
 #include <ccSort/ccSort.h>
