@@ -42,7 +42,13 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 4;
 	config.tileConfiguration.yPeriod = 2;
 
-	ccnGenerateValueNoise1D(&noise, &config, 1024, CCN_INTERP_CUBIC);
+#define MAXSCALE 512
+
+	for(unsigned int scale = MAXSCALE; scale != 64; scale >>= 1) {
+		config.range.high = (float)scale / (MAXSCALE << 1);
+		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_PERLIN);
+		config.storeMethod = CCN_STORE_ADD;
+	}
 
 	for(unsigned int i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.1f ?230:50;

@@ -130,7 +130,6 @@ void ccnGenerateValueNoise1D(
 	if(noise->width < scale) {
 		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
 		offset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
-		printf("%d\n", coordinateOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
@@ -165,7 +164,20 @@ void ccnGenerateValueNoise1D(
 			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)offset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
 		}
 		else {
+			if(factor == 0) {
+				if(i == 0) {
+					for(j = 0; j < 2; j++) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + j + coordinateOffset, period), 0);
+					}
+				}
+				else {
+					bufferedValues[0] = bufferedValues[1];
+				}
 
+				bufferedValues[1] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + 1 + coordinateOffset, period), 0);
+			}
+
+			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)offset / scale, interpolationMethod) * multiplier + configuration->range.low);
 		}
 	}
 
