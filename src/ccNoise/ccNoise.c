@@ -12,7 +12,7 @@
 #define _CCN_PERLIN_NORMALIZER         0.707107
 #define _CCN_MANHATTAN_DISTANCE_FACTOR 1.414214
 
-#ifdef _GNUC_
+#ifdef __GNUC__
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
 	__typeof__ (b) _b = (b); \
