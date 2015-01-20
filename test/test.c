@@ -34,43 +34,54 @@ static void generate(int left, int top)
 	ccnNoise noise;
 	ccnNoiseConfiguration config;
 
-	ccnNoiseAllocate1D(noise, WIDTH);
+	ccnNoiseAllocate2D(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 1};
+	config.range = (ccnRange){ -1, 1};
 	config.storeMethod = CCN_STORE_SET;
 	config.x = left?-1:0;
 	config.y = top?7:8;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 4;
+	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-#define MAXSCALE 256
-#define MINSCALE 4
+	/*
+#define MAXSCALE 128
+#define MINSCALE 64
 
 	unsigned int scale;
 	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_COSINE);
+		ccnGenerateValueNoise1D(&noise, &config, scale, CCN_INTERP_CUBIC);
 		config.storeMethod = CCN_STORE_ADD;
 		config.seed++;
 	}
-	
+	*/
+
+	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
+
+	config.storeMethod = CCN_STORE_MULTIPLY;
+	config.seed++;
+
+	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
+
 	unsigned int i;
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
-		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.1f ?230:50;
-		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
-		pixels[i].r = pixels[i].g = pixels[i].b = 0;
+		pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.01f?230:fabs(noise.values[i])*255;
+		pixels[i].b *= 0.4f;
+		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 955);
+		//pixels[i].r = pixels[i].g = pixels[i].b = 0;
 		pixels[i].a = 255;
 	}
 
+	/*
 	for(i = 0; i < WIDTH; i++) {
-		int index = i + (int)(noise.values[i] * (HEIGHT - 1)) * WIDTH;
+		int index = i + (int)((1 - noise.values[i]) * (HEIGHT - 1)) * WIDTH;
 
 		pixels[index].r = pixels[index].g = pixels[index].b = 255;
 	}
-
+	*/
 	ccnNoiseFree(noise);
 
 	glBindTexture(GL_TEXTURE_2D, left?top?textureLeftTop:textureLeftBottom:top?textureRightTop:textureRightBottom);

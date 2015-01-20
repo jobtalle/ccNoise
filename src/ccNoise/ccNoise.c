@@ -319,7 +319,7 @@ void ccnGenerateWorleyNoise2D(
 	ccnPoint offset;
 
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
-	int *pointsDistances = malloc(pointListSize*sizeof(unsigned int));
+	unsigned int *pointDistances = malloc(pointListSize*sizeof(unsigned int));
 
 	unsigned int maxManhattanDistance = (unsigned int)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
 
@@ -354,31 +354,31 @@ void ccnGenerateWorleyNoise2D(
 
 			if(manhattanDistance < maxManhattanDistance) {
 				if(distanceMethod == CCN_DIST_MANHATTAN) {
-					pointsDistances[pointId] = manhattanDistance;
+					pointDistances[pointId] = manhattanDistance;
 				}
 				else {
-					pointsDistances[pointId] = ccnDistance(p, pointList[j], distanceMethod);
+					pointDistances[pointId] = ccnDistance(p, pointList[j], distanceMethod);
 				}
 
 				pointId++;
 			}
 		}
 
-		if(pointId > 1) ccsQuicksort(pointsDistances, 0, pointId);
+		if(pointId > 1) ccsQuicksort(pointDistances, 0, pointId);
 
-		if(pointId <= n || pointsDistances[n] > high) {
+		if(pointId <= n || pointDistances[n] > high) {
 			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.high);
 		}
-		else if(pointsDistances[n] < low) {
+		else if(pointDistances[n] < low) {
 			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.low);
 		}
 		else {
-			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(configuration->range.low, configuration->range.high, (float)(pointsDistances[n] - low) / (high - low), interpolationMethod));
+			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(configuration->range.low, configuration->range.high, (float)(pointDistances[n] - low) / (high - low), interpolationMethod));
 		}
 	}
 
 	free(pointList);
-	free(pointsDistances);
+	free(pointDistances);
 }
 
 void ccnGeneratePerlinNoise2D(

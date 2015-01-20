@@ -115,15 +115,6 @@ void ccnGenerateValueNoise2D(
 // distanceMethod:      the method by which the distance to a point is calculated
 // interpolationMethod: the method by which the distance value is interpolated
 
-void ccnGenerateWorleyNoise1D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	unsigned int points,
-	unsigned int n,
-	int low, int high,
-	ccnDistanceMethod distanceMethod,
-	ccnInterpolationMethod interpolationMethod);
-
 void ccnGenerateWorleyNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
