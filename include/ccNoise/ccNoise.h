@@ -120,7 +120,7 @@ void ccnGenerateWorleyNoise2D(
 	 ccnNoiseConfiguration *configuration,
 	 unsigned int points,
 	 unsigned int n,
-	 int low, int high,
+	 unsigned int low, unsigned int high,
 	 ccnDistanceMethod distanceMethod,
 	 ccnInterpolationMethod interpolationMethod);
 

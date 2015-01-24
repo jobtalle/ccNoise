@@ -228,7 +228,7 @@ void ccnGenerateValueNoise2D(
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
 	}
 
-	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
+	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
@@ -306,7 +306,7 @@ void ccnGenerateWorleyNoise2D(
 	 ccnNoiseConfiguration *configuration,
 	 unsigned int points,
 	 unsigned int n,
-	 int low, int high,
+	 unsigned int low, unsigned int high,
 	 ccnDistanceMethod distanceMethod,
 	 ccnInterpolationMethod interpolationMethod)
 {
@@ -327,7 +327,7 @@ void ccnGenerateWorleyNoise2D(
 	assert(interpolationMethod != CCN_INTERP_CUBIC);
 #endif
 
-	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) xPeriod = yPeriod = CCN_INFINITE;
+	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) xPeriod = yPeriod = CCN_INFINITE;
 
 	for(offset.x = -1; offset.x <= 1; offset.x++) {
 		for(offset.y = -1; offset.y <= 1; offset.y++) {
@@ -381,6 +381,58 @@ void ccnGenerateWorleyNoise2D(
 	free(pointDistances);
 }
 
+void ccnGeneratePerlinNoise1D(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int scale,
+	ccnInterpolationMethod interpolationMethod)
+{
+	unsigned int size = noise->width;
+	unsigned int steps = (unsigned int)ceil((float)noise->width / scale);
+	unsigned int interpolationOffset = 0;
+	unsigned int period;
+	unsigned int i;
+
+	int coordinateOffset = configuration->x * steps;
+
+	float multiplier = configuration->range.high - configuration->range.low;
+	float *vectors = malloc(sizeof(float)* ((steps + 1) << 1));
+
+#ifdef _DEBUG
+	assert(interpolationMethod != CCN_INTERP_CUBIC);
+	assert(!(scale & (scale - 1)));
+#endif
+
+	if(noise->width < scale) {
+		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
+		interpolationOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
+	}
+
+	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
+		period = CCN_INFINITE;
+	}
+	else {
+		period = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+	}
+
+	for(i = 0; i <= steps; i++) {
+		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE);
+
+		vectors[i << 1] = cosf(radians);
+		vectors[(i << 1) + 1] = sinf(radians);
+		printf("%f\n", vectors[i << 1]);
+	}
+
+	for(i = 0; i < size; i++) {
+		unsigned int step = i / scale;
+
+		float vec = (float)(i - step * scale) / scale;
+		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step << 1] * vec, vectors[(step + 1) << 1] * (vec - 1.0f), vec, interpolationMethod) + 1) * multiplier) + configuration->range.low);
+	}
+
+	free(vectors);
+}
+
 void ccnGeneratePerlinNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
@@ -417,7 +469,7 @@ void ccnGeneratePerlinNoise2D(
 		yOffset = ccnFloorMod(configuration->y, scale / noise->height) * noise->height;
 	}
 
-	if(configuration->tileConfiguration.tileMethod = CCN_TILE_NOT) {
+	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
@@ -431,11 +483,11 @@ void ccnGeneratePerlinNoise2D(
 		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(X + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
-		vectors[(i << 1) + 1] = (float)sin(radians);
+		vectors[(i << 1) + 1] = (float)sin(radians); // TODO cosf/sinf
 	}
 
 	for(i = 0; i < size; i++) {
-		int Y = i / noise->width;
+		int Y = i / noise->width; // TODO unsigned?
 		int X = i - Y * noise->width;
 		int xStep = X / scale;
 		int yStep = Y / scale;
@@ -445,9 +497,6 @@ void ccnGeneratePerlinNoise2D(
 
 		unsigned int indexTop = (xStep + yStep * (xSteps + 1)) << 1;
 		unsigned int indexBottom = indexTop + ((xSteps + 1) << 1);
-
-		float factorX = (float)(X - xStep * scale) / scale;
-		
 		float vecX = (float)(X - xStep * scale) / scale;
 		float vecY = (float)(Y - yStep * scale) / scale;
 
@@ -456,11 +505,11 @@ void ccnGeneratePerlinNoise2D(
 			ccnInterpolate(
 			vectors[indexTop] * vecX + vectors[indexTop + 1] * vecY,
 			vectors[indexTop + 2] * (vecX - 1.0f) + vectors[indexTop + 3] * vecY,
-			factorX, interpolationMethod),
+			vecX, interpolationMethod),
 			ccnInterpolate(
 			vectors[indexBottom] * vecX + vectors[indexBottom + 1] * (vecY - 1.0f),
 			vectors[indexBottom + 2] * (vecX - 1.0f) + vectors[indexBottom + 3] * (vecY - 1.0f),
-			factorX, interpolationMethod),
+			vecX, interpolationMethod),
 			(float)(Y - yStep * scale) / scale, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * _CCN_PERLIN_NORMALIZER * multiplier) + configuration->range.low);
 	}
 
