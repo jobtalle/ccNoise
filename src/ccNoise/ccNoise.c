@@ -406,7 +406,6 @@ void ccnGeneratePerlinNoise1D(
 	if(noise->width < scale) {
 		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
 		interpolationOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
-		printf("%d\n", interpolationOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
@@ -417,15 +416,13 @@ void ccnGeneratePerlinNoise1D(
 	}
 
 	for(i = 0; i <= steps; i++) {
-		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE);
-
-		vectors[i] = cosf(radians);
+		vectors[i] = cosf((float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE));
 	}
 
 	for(i = 0; i < size; i++) {
 		unsigned int step = i / scale;
-
 		float vec = (float)(i + interpolationOffset - step * scale) / scale;
+
 		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
 	}
 
@@ -477,19 +474,19 @@ void ccnGeneratePerlinNoise2D(
 	}
 
 	for(i = 0; i < totalSteps; i++) {
-		int Y = i / (xSteps + 1);
-		int X = i - Y * (xSteps + 1);
+		unsigned int Y = i / (xSteps + 1);
+		unsigned int X = i - Y * (xSteps + 1);
 		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(X + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
-		vectors[(i << 1) + 1] = (float)sin(radians); // TODO cosf/sinf
+		vectors[(i << 1) + 1] = (float)sin(radians);
 	}
 
 	for(i = 0; i < size; i++) {
-		int Y = i / noise->width; // TODO unsigned?
-		int X = i - Y * noise->width;
-		int xStep = X / scale;
-		int yStep = Y / scale;
+		unsigned int Y = i / noise->width;
+		unsigned int X = i - Y * noise->width;
+		unsigned int xStep = X / scale;
+		unsigned int yStep = Y / scale;
 
 		X += xOffset;
 		Y += yOffset;

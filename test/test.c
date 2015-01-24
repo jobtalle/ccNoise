@@ -34,7 +34,7 @@ static void generate(int left, int top)
 	ccnNoise noise;
 	ccnNoiseConfiguration config;
 
-	ccnNoiseAllocate1D(noise, WIDTH);
+	ccnNoiseAllocate2D(noise, WIDTH, HEIGHT);
 
 	config.seed = seed;
 	config.range = (ccnRange){ 0, 0};
@@ -46,13 +46,13 @@ static void generate(int left, int top)
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-#define MAXSCALE 512
-#define MINSCALE 32
+#define MAXSCALE 32
+#define MINSCALE 16
 
 	unsigned int scale;
 	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGeneratePerlinNoise1D(&noise, &config, scale, CCN_INTERP_PERLIN);
+		ccnGeneratePerlinNoise2D(&noise, &config, scale, CCN_INTERP_PERLIN);
 		config.storeMethod = CCN_STORE_ADD;
 		config.seed++;
 	}
@@ -60,16 +60,18 @@ static void generate(int left, int top)
 	unsigned int i;
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
 		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.01f?230:fabs(noise.values[i])*255;
-		//pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 955);
-		pixels[i].r = pixels[i].g = pixels[i].b = 0;
+		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		//pixels[i].r = pixels[i].g = pixels[i].b = 0;
 		pixels[i].a = 255;
 	}
 
+	/*
 	for(i = 0; i < WIDTH; i++) {
 		int index = i + (int)((1 - noise.values[i]) * (HEIGHT - 1)) * WIDTH;
 
 		pixels[index].r = pixels[index].g = pixels[index].b = 255;
 	}
+	*/
 
 	ccnNoiseFree(noise);
 
