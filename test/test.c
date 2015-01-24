@@ -37,22 +37,22 @@ static void generate(int left, int top)
 	ccnNoiseAllocate1D(noise, WIDTH);
 
 	config.seed = seed;
-	config.range = (ccnRange){ 0, 1};
+	config.range = (ccnRange){ 0, 0};
 	config.storeMethod = CCN_STORE_SET;
-	config.x = left?-1:0;
+	config.x = left?1:2;
 	config.y = top?7:8;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
 	config.tileConfiguration.xPeriod = 2;
 	config.tileConfiguration.yPeriod = 2;
 
-#define MAXSCALE 128
-#define MINSCALE 64
+#define MAXSCALE 512
+#define MINSCALE 32
 
 	unsigned int scale;
 	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGeneratePerlinNoise1D(&noise, &config, scale, CCN_INTERP_LINEAR);
+		ccnGeneratePerlinNoise1D(&noise, &config, scale, CCN_INTERP_PERLIN);
 		config.storeMethod = CCN_STORE_ADD;
 		config.seed++;
 	}

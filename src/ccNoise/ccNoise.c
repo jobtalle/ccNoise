@@ -396,7 +396,7 @@ void ccnGeneratePerlinNoise1D(
 	int coordinateOffset = configuration->x * steps;
 
 	float multiplier = configuration->range.high - configuration->range.low;
-	float *vectors = malloc(sizeof(float)* ((steps + 1) << 1));
+	float *vectors = malloc(sizeof(float)* (steps + 1));
 
 #ifdef _DEBUG
 	assert(interpolationMethod != CCN_INTERP_CUBIC);
@@ -406,6 +406,7 @@ void ccnGeneratePerlinNoise1D(
 	if(noise->width < scale) {
 		coordinateOffset = (int)floor(coordinateOffset * ((float)noise->width / scale));
 		interpolationOffset = ccnFloorMod(configuration->x, scale / noise->width) * noise->width;
+		printf("%d\n", interpolationOffset);
 	}
 
 	if(configuration->tileConfiguration.tileMethod == CCN_TILE_NOT) {
@@ -418,16 +419,14 @@ void ccnGeneratePerlinNoise1D(
 	for(i = 0; i <= steps; i++) {
 		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE);
 
-		vectors[i << 1] = cosf(radians);
-		vectors[(i << 1) + 1] = sinf(radians);
-		printf("%f\n", vectors[i << 1]);
+		vectors[i] = cosf(radians);
 	}
 
 	for(i = 0; i < size; i++) {
 		unsigned int step = i / scale;
 
-		float vec = (float)(i - step * scale) / scale;
-		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step << 1] * vec, vectors[(step + 1) << 1] * (vec - 1.0f), vec, interpolationMethod) + 1) * multiplier) + configuration->range.low);
+		float vec = (float)(i + interpolationOffset - step * scale) / scale;
+		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
 	}
 
 	free(vectors);
