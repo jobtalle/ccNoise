@@ -27,19 +27,24 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 {
 	switch(interpolationMethod) {
 	case CCN_INTERP_LINEAR:
-		return ccTriInterpolateLinear(a, b, x);
-	case CCN_INTERP_QUADRATIC:
-		return ccTriInterpolateQuadratic(a, b, x);
-	case CCN_INTERP_QUADRATIC_INVERSE:
-		return ccTriInterpolateQuadraticInverse(a, b, x);
+		return a * (1 - x) + b*x;
 	case CCN_INTERP_COSINE:
-		return ccTriInterpolateCosine(a, b, x);
+	{
+		float factor = (1.0f - cosf(x * (float)CC_TRI_PI)) * .5f;
+		return a * (1.0f - factor) + b * factor;
+	}
 	case CCN_INTERP_PERLIN:
 		return a + x*x*x*(x*(x * 6 - 15) + 10)*(b - a);
 		break;
 	default:
 		return 0;
 	}
+}
+
+static float ccTriInterpolateCubic(float a, float b, float c, float d, float x)
+{
+	float p = (d - c) - (a - b);
+	return ccTriCubed(x) * p + ccTriSquared(x) * ((a - b) - p) + x * (c - a) + b;
 }
 
 static unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
