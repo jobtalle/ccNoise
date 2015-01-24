@@ -52,7 +52,7 @@ static void generate(int left, int top)
 	unsigned int scale;
 	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
 		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGeneratePerlinNoise2D(&noise, &config, scale, CCN_INTERP_PERLIN);
+		ccnGenerateValueNoise2D(&noise, &config, scale, CCN_INTERP_COSINE);
 		config.storeMethod = CCN_STORE_ADD;
 		config.seed++;
 	}

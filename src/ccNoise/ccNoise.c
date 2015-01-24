@@ -41,7 +41,7 @@ static float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod in
 	}
 }
 
-static float ccTriInterpolateCubic(float a, float b, float c, float d, float x)
+static float ccnInterpolateCubic(float a, float b, float c, float d, float x)
 {
 	float p = (d - c) - (a - b);
 	return ccTriCubed(x) * p + ccTriSquared(x) * ((a - b) - p) + x * (c - a) + b;
@@ -173,7 +173,7 @@ void ccnGenerateValueNoise1D(
 				}
 			}
 
-			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)interpolationOffset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, (ccnInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)interpolationOffset / scale) * .5f + 0.25f) * multiplier + configuration->range.low);
 		}
 		else {
 			if(factor == 0) {
@@ -267,7 +267,7 @@ void ccnGenerateValueNoise2D(
 					}
 				}
 
-				xValues[i * noise->width + j] = ccTriInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)xOffset / scale);
+				xValues[i * noise->width + j] = ccnInterpolateCubic(bufferedValues[0], bufferedValues[1], bufferedValues[2], bufferedValues[3], factor + (float)xOffset / scale);
 			}
 			else {
 				if(factor == 0) {
@@ -295,7 +295,7 @@ void ccnGenerateValueNoise2D(
 		float interpFactor = factor + (float)yOffset / scale;
 
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
-			ccnStore(noise->values + i, configuration->storeMethod, (ccTriInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], interpFactor) * .5f + 0.25f) * multiplier + configuration->range.low);
+			ccnStore(noise->values + i, configuration->storeMethod, (ccnInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], interpFactor) * .5f + 0.25f) * multiplier + configuration->range.low);
 		}
 		else {
 			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(xValues[index], xValues[index + noise->width], interpFactor, interpolationMethod) * multiplier + configuration->range.low);
