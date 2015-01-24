@@ -43,11 +43,11 @@ static void generate(int left, int top)
 	config.y = top?7:8;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 2;
-	config.tileConfiguration.yPeriod = 2;
+	config.tileConfiguration.xPeriod = 1;
+	config.tileConfiguration.yPeriod = 1;
 
-#define MAXSCALE 32
-#define MINSCALE 16
+#define MAXSCALE 128
+#define MINSCALE 1
 
 	unsigned int scale;
 	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {

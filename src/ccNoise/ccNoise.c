@@ -475,8 +475,8 @@ void ccnGeneratePerlinNoise2D(
 
 	for(i = 0; i < totalSteps; i++) {
 		unsigned int Y = i / (xSteps + 1);
-		unsigned int X = i - Y * (xSteps + 1);
-		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(X + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
+
+		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate((i - Y * (xSteps + 1)) + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
 
 		vectors[i << 1] = (float)cos(radians);
 		vectors[(i << 1) + 1] = (float)sin(radians);
