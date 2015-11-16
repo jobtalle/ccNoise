@@ -43,35 +43,17 @@ static void generate(int left, int top)
 	config.y = top?7:8;
 
 	config.tileConfiguration.tileMethod = CCN_TILE_CARTESIAN;
-	config.tileConfiguration.xPeriod = 1;
-	config.tileConfiguration.yPeriod = 1;
+	config.tileConfiguration.xPeriod = 2;
+	config.tileConfiguration.yPeriod = 2;
 
-#define MAXSCALE 128
-#define MINSCALE 1
-
-	unsigned int scale;
-	for(scale = MAXSCALE; scale != MINSCALE; scale >>= 1) {
-		config.range.high = (float)scale / (MAXSCALE << 1);
-		ccnGenerateValueNoise2D(&noise, &config, scale, CCN_INTERP_COSINE);
-		config.storeMethod = CCN_STORE_ADD;
-		config.seed++;
-	}
+	config.range.low = 0;
+	config.range.high = 1;
+	ccnGenerateWorleyNoise2D(&noise, &config, 8, 1, 10, 140, CCN_DIST_EUCLIDEAN, CCN_INTERP_LINEAR);
 
 	unsigned int i;
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
-		//pixels[i].r = pixels[i].g = pixels[i].b = fabs(noise.values[i]) < 0.01f?230:fabs(noise.values[i])*255;
 		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
-		//pixels[i].r = pixels[i].g = pixels[i].b = 0;
-		pixels[i].a = 255;
 	}
-
-	/*
-	for(i = 0; i < WIDTH; i++) {
-		int index = i + (int)((1 - noise.values[i]) * (HEIGHT - 1)) * WIDTH;
-
-		pixels[index].r = pixels[index].g = pixels[index].b = 255;
-	}
-	*/
 
 	ccnNoiseFree(noise);
 
@@ -156,22 +138,22 @@ int main(int argc, char **argv)
 					printf("Set seed to %d\n", seed);
 					break;
 				case CC_KEY_1:
-					printf("Rendering worley noise...\n");
+					printf("Rendering noise...\n");
 					generateLeftTop();
 					printf("done.\n");
 					break;
 				case CC_KEY_2:
-					printf("Rendering worley noise...\n");
+					printf("Rendering noise...\n");
 					generateRightTop();
 					printf("done.\n");
 					break;
 				case CC_KEY_3:
-					printf("Rendering worley noise...\n");
+					printf("Rendering noise...\n");
 					generateLeftBottom();
 					printf("done.\n");
 					break;
 				case CC_KEY_4:
-					printf("Rendering worley noise...\n");
+					printf("Rendering noise...\n");
 					generateRightBottom();
 					printf("done.\n");
 					break;
