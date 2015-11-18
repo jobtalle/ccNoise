@@ -18,6 +18,10 @@
 #define WIDTH  512
 #define HEIGHT 256
 
+#ifndef _DEBUG
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
+
 GLuint textureLeftTop, textureRightTop, textureLeftBottom, textureRightBottom;
 
 ccRandomizer32 randomizer;
@@ -48,11 +52,38 @@ static void generate(int left, int top)
 
 	config.range.low = 0;
 	config.range.high = 1;
-	ccnGenerateWorleyNoise2D(&noise, &config, 8, 1, 10, 140, CCN_DIST_EUCLIDEAN, CCN_INTERP_LINEAR);
+	//ccnGenerateValueNoise2D(&noise, &config, 256, CCN_INTERP_CUBIC);
+
+	for(int x = 128; x > 1; x >>= 1) {
+		config.storeMethod = CCN_STORE_ADD;
+		config.range.high /= 2;
+		config.seed++;
+		ccnGenerateValueNoise2D(&noise, &config, x, CCN_INTERP_CUBIC);
+	}
+
+	config.range.high = 2;
+	config.storeMethod = CCN_STORE_MULTIPLY;
+	ccnGenerateValueNoise2D(&noise, &config, 64, CCN_INTERP_CUBIC);
+
+	config.range.high = 1;
+	config.storeMethod = CCN_STORE_SUBTRACT;
+	ccnGenerateWorleyNoise2D(&noise, &config, 25, 0, 20, 70, CCN_DIST_EUCLIDEAN, CCN_INTERP_COSINE);
 
 	unsigned int i;
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
-		pixels[i].r = pixels[i].g = pixels[i].b = (unsigned char)(noise.values[i] * 255);
+		pixels[i].r = pixels[i].g = (unsigned char)(noise.values[i] * 150);
+		pixels[i].b = (unsigned char)(noise.values[i] * 250);
+		
+		/*
+		if(noise.values[i] > 0.5) {
+			pixels[i].r = pixels[i].g = 60;
+			pixels[i].b = 140;
+		}
+		else {
+			pixels[i].b = pixels[i].r = 20;
+			pixels[i].g = 200;
+		}
+		*/
 	}
 
 	ccnNoiseFree(noise);
