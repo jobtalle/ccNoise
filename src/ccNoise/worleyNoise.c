@@ -1,10 +1,17 @@
 #include <stdlib.h>
 #include <assert.h>
-#include <ccSort/ccSort.h>
 
 #include "ccNoiseInternal.h"
 
 #define _CCN_MANHATTAN_DISTANCE_FACTOR 1.414214
+
+static int ccnWorleyCompare(const void *a, const void *b)
+{
+	int ia = *(int*)a;
+	int ib = *(int*)b;
+
+	return ia - ib;
+}
 
 void ccnGenerateWorleyNoise2D(
 	ccnNoise *noise,
@@ -69,7 +76,7 @@ void ccnGenerateWorleyNoise2D(
 			}
 		}
 
-		if(pointId > 1) ccsQuicksort(pointDistances, 0, pointId);
+		if(pointId > 1) qsort(pointDistances, pointId, sizeof(unsigned int), ccnWorleyCompare);
 
 		if(pointId <= n || pointDistances[n] > high) {
 			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.high);
