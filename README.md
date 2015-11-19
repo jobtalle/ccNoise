@@ -13,8 +13,8 @@ The following libraries are required to build ccNoise:
 
 Examples:
 
-![Worley noise with n=1](examples/worley1.png)
-![Perlin, value and worley noise combined](examples/composite1.png)
+![Worley noise with n=1](examples/worley1.jpg)
+![Perlin, value and worley noise combined](examples/composite1.jpg)
 ![Worley noise with n=1 and manhattan distance](examples/worley2.png)
-![Fractal perlin noise](examples/perlin1.png)
+![Fractal perlin noise](examples/perlin1.jpg)
 ![Value noise with cubic interpolation](examples/value1.png)
