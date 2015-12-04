@@ -11,6 +11,8 @@ The following libraries are required to build ccNoise:
 - [ccRandom](https://github.com/jobtalle/ccRandom)
 - [ccTrigonometry](https://github.com/jobtalle/ccTrigonometry)
 
+These libraries are included in the project.
+
 Examples:
 
 ![Worley noise with n=1](examples/worley1.jpg)
