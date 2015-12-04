@@ -40,15 +40,15 @@ void ccnGeneratePerlinNoise1D(
 		period = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
 	}
 
-	for(i = 0; i <= steps; i++) {
-		vectors[i] = cosf((float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE));
+	for(i = 0; i <= steps;) {
+		vectors[i] = cosf((float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i++ + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE));
 	}
 
-	for(i = 0; i < size; i++) {
+	for(i = 0; i < size;) {
 		unsigned int step = i / scale;
 		float vec = (float)(i + interpolationOffset - step * scale) / scale;
 
-		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
+		ccnStore(noise->values + i++, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
 	}
 
 	free(vectors);
@@ -98,7 +98,7 @@ void ccnGeneratePerlinNoise2D(
 		yPeriod = (unsigned int)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
 	}
 
-	for(i = 0; i < totalSteps; i++) {
+	for(i = 0; i < totalSteps; ++i) {
 		unsigned int Y = i / (xSteps + 1);
 
 		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate((i - Y * (xSteps + 1)) + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
@@ -107,7 +107,7 @@ void ccnGeneratePerlinNoise2D(
 		vectors[(i << 1) + 1] = (float)sin(radians);
 	}
 
-	for(i = 0; i < size; i++) {
+	for(i = 0; i < size; ++i) {
 		unsigned int Y = i / noise->width;
 		unsigned int X = i - Y * noise->width;
 		unsigned int xStep = X / scale;

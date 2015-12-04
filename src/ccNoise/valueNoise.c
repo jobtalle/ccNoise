@@ -45,13 +45,13 @@ void ccnGenerateValueNoise1D(
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
 			if(factor == 0) {
 				if(i == 0) {
-					for(j = 0; j < 4; j++) {
-						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct - 1 + j + coordinateOffset, period), 0);
+					for(j = 0; j < 4;) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct - 1 + j++ + coordinateOffset, period), 0);
 					}
 				}
 				else {
-					for(j = 0; j < 3; j++) {
-						bufferedValues[j] = bufferedValues[j + 1];
+					for(j = 0; j < 3;) {
+						bufferedValues[j] = bufferedValues[++j];
 					}
 
 					bufferedValues[3] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + 2 + coordinateOffset, period), 0);
@@ -63,8 +63,8 @@ void ccnGenerateValueNoise1D(
 		else {
 			if(factor == 0) {
 				if(i == 0) {
-					for(j = 0; j < 2; j++) {
-						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + j + coordinateOffset, period), 0);
+					for(j = 0; j < 2;) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + j++ + coordinateOffset, period), 0);
 					}
 				}
 				else {
@@ -130,8 +130,8 @@ void ccnGenerateValueNoise2D(
 	xValues = malloc(noise->width * offsetHeight * sizeof(float));
 	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
 
-	for(i = 0; i < offsetHeight; i++) {
-		for(j = 0; j < noise->width; j++) {
+	for(i = 0; i < offsetHeight; ++i) {
+		for(j = 0; j < noise->width; ++j) {
 			unsigned int octX = j / scale;
 
 			float factor = (float)(j - octX * scale) / scale;
@@ -171,7 +171,7 @@ void ccnGenerateValueNoise2D(
 		}
 	}
 
-	for(i = 0; i < size; i++) {
+	for(i = 0; i < size; ++i) {
 		unsigned int Y = i / noise->width;
 		unsigned int octY = Y / scale;
 		unsigned int index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;

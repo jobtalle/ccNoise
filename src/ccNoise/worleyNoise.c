@@ -47,7 +47,7 @@ void ccnGenerateWorleyNoise2D(
 
 			ccrSeed32(&randomizer, ccrGenerateUintCoordinate(configuration->seed, ccnWrapCoordinate(configuration->x + offset.x, xPeriod), ccnWrapCoordinate(configuration->y + offset.y, yPeriod)));
 
-			for(i = 0; i < points; i++) {
+			for(i = 0; i < points; ++i) {
 				pointList[pointId].x = (int)((ccrGenerateFloat32(&randomizer) + offset.x) * noise->width);
 				pointList[pointId].y = (int)((ccrGenerateFloat32(&randomizer) + offset.y) * noise->height);
 				pointId++;
@@ -55,7 +55,7 @@ void ccnGenerateWorleyNoise2D(
 		}
 	}
 
-	for(i = 0; i < size; i++) {
+	for(i = 0; i < size; ++i) {
 		ccnPoint p;
 		p.y = i / noise->width;
 		p.x = i - p.y * noise->width;
