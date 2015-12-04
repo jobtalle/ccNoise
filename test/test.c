@@ -72,7 +72,8 @@ static void generate(int left, int top)
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
 		unsigned char v = (unsigned char)(noise.values[i] * 255);
 
-		pixels[i].r = pixels[i].g = pixels[i].b = v;
+		pixels[i].r = pixels[i].g = (unsigned char)(v * 0.7f);
+		pixels[i].b = pixels[i].r - 160;
 	}
 
 	ccnNoiseFree(noise);
