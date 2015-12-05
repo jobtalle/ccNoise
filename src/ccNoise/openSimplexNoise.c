@@ -38,16 +38,16 @@ double open_simplex_noise2(struct osn_context *ctx, double x, double y);
 double open_simplex_noise3(struct osn_context *ctx, double x, double y, double z);
 double open_simplex_noise4(struct osn_context *ctx, double x, double y, double z, double w);
 
-#define STRETCH_CONSTANT_2D (-0.211324865405187)    /* (1 / sqrt(2 + 1) - 1 ) / 2; */
-#define SQUISH_CONSTANT_2D  (0.366025403784439)     /* (sqrt(2 + 1) -1) / 2; */
-#define STRETCH_CONSTANT_3D (-1.0 / 6.0)            /* (1 / sqrt(3 + 1) - 1) / 3; */
-#define SQUISH_CONSTANT_3D  (1.0 / 3.0)             /* (sqrt(3+1)-1)/3; */
-#define STRETCH_CONSTANT_4D (-0.138196601125011)    /* (1 / sqrt(4 + 1) - 1) / 4; */
-#define SQUISH_CONSTANT_4D  (0.309016994374947)     /* (sqrt(4 + 1) - 1) / 4; */
+#define STRETCH_CONSTANT_2D -0.211324865405187     /* (1 / sqrt(2 + 1) - 1 ) / 2; */
+#define SQUISH_CONSTANT_2D   0.366025403784439     /* (sqrt(2 + 1) -1) / 2; */
+#define STRETCH_CONSTANT_3D -1.0 / 6.0             /* (1 / sqrt(3 + 1) - 1) / 3; */
+#define SQUISH_CONSTANT_3D   1.0 / 3.0             /* (sqrt(3+1)-1)/3; */
+#define STRETCH_CONSTANT_4D -0.138196601125011     /* (1 / sqrt(4 + 1) - 1) / 4; */
+#define SQUISH_CONSTANT_4D   0.309016994374947     /* (sqrt(4 + 1) - 1) / 4; */
 
-#define NORM_CONSTANT_2D (47.0)
-#define NORM_CONSTANT_3D (103.0)
-#define NORM_CONSTANT_4D (30.0)
+#define NORM_CONSTANT_2D 81.406388f                /* 94 * (sqrt(3) / 2) */
+#define NORM_CONSTANT_3D 103.0
+#define NORM_CONSTANT_4D 30.0
 
 #define DEFAULT_SEED (0LL)
 
@@ -361,7 +361,7 @@ double open_simplex_noise2(struct osn_context *ctx, double x, double y)
 		value += attn_ext * attn_ext * extrapolate2(ctx, xsv_ext, ysv_ext, dx_ext, dy_ext);
 	}
 
-	return value / NORM_CONSTANT_2D;
+	return value / NORM_CONSTANT_2D + 0.5f;
 }
 
 /*
@@ -2410,16 +2410,26 @@ void ccnGenerateOpenSimplex2D(
 {
 	unsigned int i;
 	unsigned int size = noise->width * noise->height;
+	float multiplier = configuration->range.high - configuration->range.low;
 	struct osn_context *ctx;
 
 	open_simplex_noise(configuration->seed, &ctx);
 
+	double min = 0;
+	double max = 0;
+
 	for(i = 0; i < size; ++i) {
 		unsigned int y = i / noise->width;
 		unsigned int x = i - y * noise->width;
+		float v = open_simplex_noise2(ctx, (float)x / scale, (float)y / scale);
 
-		ccnStore(noise->values + i, configuration->storeMethod, open_simplex_noise2(ctx, (float)x / scale, (float)y / scale));
+		if(v > max) max = v;
+		if(v < min) min = v;
+
+		ccnStore(noise->values + i, configuration->storeMethod, v * multiplier + configuration->range.low);
 	}
+
+	printf("Min %f\nMax %f\n", min, max);
 
 	open_simplex_noise_free(ctx);
 }
