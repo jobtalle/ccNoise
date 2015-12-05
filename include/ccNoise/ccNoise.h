@@ -139,6 +139,15 @@ void ccnGeneratePerlinNoise2D(
      unsigned int scale,
      ccnInterpolationMethod interpolationMethod);
 
+// Open Simplex noise
+//
+// 
+
+void ccnGenerateOpenSimplex2D(
+	ccnNoise *noise,
+	ccnNoiseConfiguration *configuration,
+	unsigned int scale);
+
 #ifdef __cplusplus
 }
 #endif

@@ -31,6 +31,11 @@ typedef struct {
 	unsigned char r, g, b, a;
 } pixelRGBA;
 
+struct osn_context {
+	int16_t *perm;
+	int16_t *permGradIndex3D;
+};
+
 static void generate(int left, int top)
 {
 	pixelRGBA *pixels = malloc(sizeof(pixelRGBA)* (WIDTH * HEIGHT));
@@ -58,15 +63,8 @@ static void generate(int left, int top)
 	config.range.low = 0;
 	config.range.high = 1;
 	
-	// Create value noise with cubic interpolation
-	ccnGenerateValueNoise2D(&noise, &config, 64, CCN_INTERP_CUBIC);
+	ccnGenerateOpenSimplex2D(&noise, &config, 64);
 
-	config.storeMethod = CCN_STORE_SUBTRACT;
-	config.seed++;
-
-	// Subtract perlin noise from it
-	ccnGeneratePerlinNoise2D(&noise, &config, 128, CCN_INTERP_PERLIN);
-	
 	// Create texture from noise
 	unsigned int i;
 	for(i = 0; i < WIDTH * HEIGHT; i++) {
