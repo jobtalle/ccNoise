@@ -6,6 +6,7 @@ ccNoise is a lightweight coherent noise library, which can be used to render and
 - Value noise
 - Worley noise
 - Perlin noise
+- OpenSimplex noise
 
 The following libraries are required to build ccNoise:
 - [ccRandom](https://github.com/jobtalle/ccRandom)
