@@ -5,10 +5,10 @@
 
 #define _CCN_MANHATTAN_DISTANCE_FACTOR 1.414214
 
-static int ccnWorleyCompare(const void *a, const void *b)
+static int32_t ccnWorleyCompare(const void *a, const void *b)
 {
-	int ia = *(int*)a;
-	int ib = *(int*)b;
+	int32_t ia = *(int*)a;
+	int32_t ib = *(int*)b;
 
 	return ia - ib;
 }
@@ -16,24 +16,24 @@ static int ccnWorleyCompare(const void *a, const void *b)
 void ccnGenerateWorleyNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int points,
-	unsigned int n,
-	unsigned int low, unsigned int high,
+	uint32_t points,
+	uint32_t n,
+	uint32_t low, uint32_t high,
 	ccnDistanceMethod distanceMethod,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise->width * noise->height;
-	unsigned int i, j;
-	unsigned int pointId = 0;
-	unsigned int pointListSize = points * 9;
-	unsigned int xPeriod = configuration->tileConfiguration.xPeriod;
-	unsigned int yPeriod = configuration->tileConfiguration.yPeriod;
+	uint32_t size = noise->width * noise->height;
+	uint32_t i, j;
+	uint32_t pointId = 0;
+	uint32_t pointListSize = points * 9;
+	uint32_t xPeriod = configuration->tileConfiguration.xPeriod;
+	uint32_t yPeriod = configuration->tileConfiguration.yPeriod;
 	ccnPoint offset;
 
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
-	unsigned int *pointDistances = malloc(pointListSize*sizeof(unsigned int));
+	uint32_t *pointDistances = malloc(pointListSize*sizeof(uint32_t));
 
-	unsigned int maxManhattanDistance = (unsigned int)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
+	uint32_t maxManhattanDistance = (uint32_t)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
 
 #ifdef _DEBUG
 	assert(interpolationMethod != CCN_INTERP_CUBIC);
@@ -62,7 +62,7 @@ void ccnGenerateWorleyNoise2D(
 
 		pointId = 0;
 		for(j = 0; j < pointListSize; j++) {
-			unsigned int manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
+			uint32_t manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
 
 			if(manhattanDistance < maxManhattanDistance) {
 				if(distanceMethod == CCN_DIST_MANHATTAN) {
@@ -76,7 +76,7 @@ void ccnGenerateWorleyNoise2D(
 			}
 		}
 
-		if(pointId > 1) qsort(pointDistances, pointId, sizeof(unsigned int), ccnWorleyCompare);
+		if(pointId > 1) qsort(pointDistances, pointId, sizeof(uint32_t), ccnWorleyCompare);
 
 		if(pointId <= n || pointDistances[n] > high) {
 			ccnStore(noise->values + i, configuration->storeMethod, configuration->range.high);

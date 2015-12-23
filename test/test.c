@@ -61,7 +61,7 @@ static void generate(int left, int top)
 
 	// Noise range
 	config.range.low = 0;
-	config.range.high = 2;
+	config.range.high = 1;
 	
 	ccnGenerateOpenSimplex2D(&noise, &config, 32);
 	//ccnGenerateValueNoise2D(&noise, &config, 32, CCN_INTERP_CUBIC);

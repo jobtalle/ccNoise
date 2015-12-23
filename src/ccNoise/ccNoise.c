@@ -40,13 +40,13 @@ float ccnInterpolateCubic(float a, float b, float c, float d, float x)
 	return ccTriCubed(x) * p + ccTriSquared(x) * ((a - b) - p) + x * (c - a) + b;
 }
 
-unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
+uint32_t ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
 {
 	switch(distanceMethod) {
 	case CCN_DIST_MANHATTAN:
 		return abs(a.x - b.x) + abs(a.y - b.y);
 	case CCN_DIST_EUCLIDEAN:
-		return (unsigned int)ccTriDistance((float)a.x, (float)a.y, (float)b.x, (float)b.y);
+		return (uint32_t)ccTriDistance((float)a.x, (float)a.y, (float)b.x, (float)b.y);
 	case CCN_DIST_CHEBYCHEV:
 		return max(abs(a.x - b.x), abs(a.y - b.y));
 	default:
@@ -54,8 +54,8 @@ unsigned int ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMetho
 	}
 }
 
-int ccnWrapCoordinate(int coordinate, unsigned int period) {
-	int positiveDeviation, negativeDeviation;
+int32_t ccnWrapCoordinate(int32_t coordinate, uint32_t period) {
+	int32_t positiveDeviation, negativeDeviation;
 
 	if(period == CCN_INFINITE || period == 0) return coordinate;
 
@@ -93,6 +93,6 @@ void ccnStore(float *buffer, ccnStoreMethod method, float value)
 	}
 }
 
-int ccnFloorMod(int x, int y) {
+int32_t ccnFloorMod(int32_t x, int32_t y) {
 	return x >= 0?x % y:y + ((x + 1) % y) - 1;
 }

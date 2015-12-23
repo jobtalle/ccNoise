@@ -7,15 +7,15 @@
 void ccnGenerateValueNoise1D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
+	uint32_t scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise->width;
-	unsigned int steps = (unsigned int)ceil((float)size / scale);
-	unsigned int i, j;
-	unsigned int period;
-	unsigned int interpolationOffset = 0;
-	int coordinateOffset = configuration->x * steps;
+	uint32_t size = noise->width;
+	uint32_t steps = (uint32_t)ceil((float)size / scale);
+	uint32_t i, j;
+	uint32_t period;
+	uint32_t interpolationOffset = 0;
+	int32_t coordinateOffset = configuration->x * steps;
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *bufferedValues;
@@ -33,13 +33,13 @@ void ccnGenerateValueNoise1D(
 		period = CCN_INFINITE;
 	}
 	else {
-		period = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		period = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
 	}
 
 	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
 
 	for(i = 0; i < size; i++) {
-		unsigned int oct = i / scale;
+		uint32_t oct = i / scale;
 		float factor = (float)(i - oct * scale) / scale;
 
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
@@ -84,19 +84,19 @@ void ccnGenerateValueNoise1D(
 void ccnGenerateValueNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
+	uint32_t scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise->width * noise->height;
-	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
-	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
-	unsigned int offsetHeight;
-	unsigned int xPeriod;
-	unsigned int yPeriod;
-	unsigned int xOffset = 0;
-	unsigned int yOffset = 0;
-	unsigned int interpolationYoffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
-	unsigned int i, j, k;
+	uint32_t size = noise->width * noise->height;
+	uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
+	uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
+	uint32_t offsetHeight;
+	uint32_t xPeriod;
+	uint32_t yPeriod;
+	uint32_t xOffset = 0;
+	uint32_t yOffset = 0;
+	uint32_t interpolationYoffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
+	uint32_t i, j, k;
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *xValues;
@@ -122,8 +122,8 @@ void ccnGenerateValueNoise2D(
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
-		xPeriod = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
-		yPeriod = (unsigned int)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
+		xPeriod = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		yPeriod = (uint32_t)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
 	}
 
 	offsetHeight = ySteps + (interpolationMethod == CCN_INTERP_CUBIC?3:1);
@@ -132,7 +132,7 @@ void ccnGenerateValueNoise2D(
 
 	for(i = 0; i < offsetHeight; ++i) {
 		for(j = 0; j < noise->width; ++j) {
-			unsigned int octX = j / scale;
+			uint32_t octX = j / scale;
 
 			float factor = (float)(j - octX * scale) / scale;
 
@@ -172,9 +172,9 @@ void ccnGenerateValueNoise2D(
 	}
 
 	for(i = 0; i < size; ++i) {
-		unsigned int Y = i / noise->width;
-		unsigned int octY = Y / scale;
-		unsigned int index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
+		uint32_t Y = i / noise->width;
+		uint32_t octY = Y / scale;
+		uint32_t index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
 
 		float factor = (float)(Y - octY * scale) / scale;
 		float interpFactor = factor + (float)yOffset / scale;

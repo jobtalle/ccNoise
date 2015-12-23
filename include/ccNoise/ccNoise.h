@@ -60,13 +60,13 @@ typedef enum {
 } ccnStoreMethod;
 
 typedef struct {
-	unsigned int width, height;
+	uint32_t width, height;
 	float *values;
 } ccnNoise;
 
 typedef struct {
 	ccnTileMethod tileMethod;
-	unsigned int xPeriod, yPeriod;
+	uint32_t xPeriod, yPeriod;
 } ccnTileConfiguration;
 
 typedef struct {
@@ -74,8 +74,8 @@ typedef struct {
 } ccnRange;
 
 typedef struct {
-	unsigned int seed;
-	int x, y, z;
+	uint32_t seed;
+	int32_t x, y, z;
 	ccnTileConfiguration tileConfiguration;
 	ccnStoreMethod storeMethod;
 	ccnRange range;
@@ -95,13 +95,13 @@ void ccnGenerateWhiteNoise2D(
 void ccnGenerateValueNoise1D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
-	 unsigned int scale,
+	 uint32_t scale,
 	 ccnInterpolationMethod interpolationMethod);
 
 void ccnGenerateValueNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
-	 unsigned int scale,
+	 uint32_t scale,
 	 ccnInterpolationMethod interpolationMethod);
 
 // Worley noise
@@ -116,9 +116,9 @@ void ccnGenerateValueNoise2D(
 void ccnGenerateWorleyNoise2D(
      ccnNoise *noise,
 	 ccnNoiseConfiguration *configuration,
-	 unsigned int points,
-	 unsigned int n,
-	 unsigned int low, unsigned int high,
+	 uint32_t points,
+	 uint32_t n,
+	 uint32_t low, uint32_t high,
 	 ccnDistanceMethod distanceMethod,
 	 ccnInterpolationMethod interpolationMethod);
 
@@ -130,13 +130,13 @@ void ccnGenerateWorleyNoise2D(
 void ccnGeneratePerlinNoise1D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
+	uint32_t scale,
 	ccnInterpolationMethod interpolationMethod);
 
 void ccnGeneratePerlinNoise2D(
      ccnNoise *noise,
      ccnNoiseConfiguration *configuration,
-     unsigned int scale,
+     uint32_t scale,
      ccnInterpolationMethod interpolationMethod);
 
 // Open Simplex noise
@@ -146,7 +146,7 @@ void ccnGeneratePerlinNoise2D(
 void ccnGenerateOpenSimplex2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale);
+	uint32_t scale);
 
 #ifdef __cplusplus
 }

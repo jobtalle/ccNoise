@@ -9,16 +9,16 @@
 void ccnGeneratePerlinNoise1D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
+	uint32_t scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int size = noise->width;
-	unsigned int steps = (unsigned int)ceil((float)noise->width / scale);
-	unsigned int interpolationOffset = 0;
-	unsigned int period;
-	unsigned int i;
+	uint32_t size = noise->width;
+	uint32_t steps = (uint32_t)ceil((float)noise->width / scale);
+	uint32_t interpolationOffset = 0;
+	uint32_t period;
+	uint32_t i;
 
-	int coordinateOffset = configuration->x * steps;
+	int32_t coordinateOffset = configuration->x * steps;
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *vectors = malloc(sizeof(float)* (steps + 1));
@@ -37,7 +37,7 @@ void ccnGeneratePerlinNoise1D(
 		period = CCN_INFINITE;
 	}
 	else {
-		period = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		period = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
 	}
 
 	for(i = 0; i <= steps;) {
@@ -45,7 +45,7 @@ void ccnGeneratePerlinNoise1D(
 	}
 
 	for(i = 0; i < size;) {
-		unsigned int step = i / scale;
+		uint32_t step = i / scale;
 		float vec = (float)(i + interpolationOffset - step * scale) / scale;
 
 		ccnStore(noise->values + i++, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
@@ -57,18 +57,18 @@ void ccnGeneratePerlinNoise1D(
 void ccnGeneratePerlinNoise2D(
 	ccnNoise *noise,
 	ccnNoiseConfiguration *configuration,
-	unsigned int scale,
+	uint32_t scale,
 	ccnInterpolationMethod interpolationMethod)
 {
-	unsigned int xSteps = (unsigned int)ceil((float)noise->width / scale);
-	unsigned int ySteps = (unsigned int)ceil((float)noise->height / scale);
-	unsigned int totalSteps = (xSteps + 1) * (ySteps + 1);
-	unsigned int size = noise->width * noise->height;
-	unsigned int xPeriod;
-	unsigned int yPeriod;
-	unsigned int xOffset = 0;
-	unsigned int yOffset = 0;
-	unsigned int i;
+	uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
+	uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
+	uint32_t totalSteps = (xSteps + 1) * (ySteps + 1);
+	uint32_t size = noise->width * noise->height;
+	uint32_t xPeriod;
+	uint32_t yPeriod;
+	uint32_t xOffset = 0;
+	uint32_t yOffset = 0;
+	uint32_t i;
 
 	float multiplier = configuration->range.high - configuration->range.low;
 	float *vectors = malloc(sizeof(float)* (totalSteps << 1));
@@ -94,12 +94,12 @@ void ccnGeneratePerlinNoise2D(
 		xPeriod = yPeriod = CCN_INFINITE;
 	}
 	else{
-		xPeriod = (unsigned int)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
-		yPeriod = (unsigned int)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
+		xPeriod = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
+		yPeriod = (uint32_t)(configuration->tileConfiguration.yPeriod * ((float)noise->height / scale));
 	}
 
 	for(i = 0; i < totalSteps; ++i) {
-		unsigned int Y = i / (xSteps + 1);
+		uint32_t Y = i / (xSteps + 1);
 
 		float radians = (float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate((i - Y * (xSteps + 1)) + offset.x, xPeriod), ccnWrapCoordinate(Y + offset.y, yPeriod)) * CC_TRI_PI_DOUBLE);
 
@@ -108,16 +108,16 @@ void ccnGeneratePerlinNoise2D(
 	}
 
 	for(i = 0; i < size; ++i) {
-		unsigned int Y = i / noise->width;
-		unsigned int X = i - Y * noise->width;
-		unsigned int xStep = X / scale;
-		unsigned int yStep = Y / scale;
+		uint32_t Y = i / noise->width;
+		uint32_t X = i - Y * noise->width;
+		uint32_t xStep = X / scale;
+		uint32_t yStep = Y / scale;
 
 		X += xOffset;
 		Y += yOffset;
 
-		unsigned int indexTop = (xStep + yStep * (xSteps + 1)) << 1;
-		unsigned int indexBottom = indexTop + ((xSteps + 1) << 1);
+		uint32_t indexTop = (xStep + yStep * (xSteps + 1)) << 1;
+		uint32_t indexBottom = indexTop + ((xSteps + 1) << 1);
 		float vecX = (float)(X - xStep * scale) / scale;
 		float vecY = (float)(Y - yStep * scale) / scale;
 
