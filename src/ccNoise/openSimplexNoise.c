@@ -21,7 +21,7 @@
 #include <string.h>
 #include <errno.h>
 
-#ifndef inline
+#if !defined inline && defined WINDOWS
 #define INLINE _inline
 #else
 #define INLINE inline
