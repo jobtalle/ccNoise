@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "ccNoiseInternal.h"
+#include <ccTrigonometry/ccTrigonometry.h>
 
-#define _CCN_MANHATTAN_DISTANCE_FACTOR 1.414214
+#include "ccNoiseInternal.h"
 
 static int32_t ccnWorleyCompare(const void *a, const void *b)
 {
@@ -33,7 +33,7 @@ void ccnGenerateWorleyNoise2D(
 	ccnPoint *pointList = malloc(pointListSize*sizeof(ccnPoint));
 	uint32_t *pointDistances = malloc(pointListSize*sizeof(uint32_t));
 
-	uint32_t maxManhattanDistance = (uint32_t)(high * _CCN_MANHATTAN_DISTANCE_FACTOR);
+	uint32_t maxManhattanDistance = (uint32_t)(high * CC_TRI_SQRT2_F);
 
 #ifdef _DEBUG
 	assert(interpolationMethod != CCN_INTERP_CUBIC);
