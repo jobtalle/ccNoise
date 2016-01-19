@@ -9,7 +9,7 @@
 //                        __/ |                                           __/ |     //
 //                       |___/                                           |___/  1.0 //
 //                                                                                  //
-//              Copyright (C) 2014 - 2015 \ Job Talle (job@ccore.org)               //
+//              Copyright (C) 2014 - 2015 \ Job Talle (jobtalle@hotmail.com)        //
 //__________________________________________________________________________________//
 //                                                                                  //
 //      This program is free software: you can redistribute it and/or modify        //
@@ -34,6 +34,9 @@
 
 #define CC_TRI_PHI           1.618034
 #define CC_TRI_PHI_F         1.618034f
+
+#define CC_TRI_SQRT2         1.414214
+#define CC_TRI_SQRT2_F       1.414214f
 
 #define ccTriSquared(x)  ((x) * (x))
 #define ccTriCubed(x)    (ccTriSquared(x) * (x))
