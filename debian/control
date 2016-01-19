@@ -1,0 +1,22 @@
+Source: libccnoise
+Priority: optional
+Maintainer: Thomas Versteeg <thomasversteeg@gmx.com>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Section: libs
+Homepage: http://github.com/tversteeg/ccFont
+#Vcs-Git: git://anonscm.debian.org/collab-maint/libccnoise.git
+#Vcs-Browser: https://anonscm.debian.org/gitweb/?p=collab-maint/libccnoise.git;a=summary
+
+Package: libccnoise-dev
+Section: libdevel
+Architecture: any
+Depends: libccnoise (= ${binary:Version}), ${misc:Depends}, libglu1-mesa-dev
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
+
+Package: libccnoise
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: <insert up to 60 chars description>
+ <insert long description, indented with spaces>
