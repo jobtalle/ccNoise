@@ -2,7 +2,7 @@
 
 NAME=ccNoise
 
-SOURCEDIR=src/$(NAME)
+SOURCEDIR=src
 LIBDIR=lib
 INCDIR=include
 BINDIR=bin
@@ -13,20 +13,21 @@ AR=ar rcs
 CFLAGS=-I$(INCDIR) -O3 -DCC_USE_ALL
 LDLIBS=-lGL -lGLU -lGLEW -lm
 
-SRCS=$(wildcard ./$(SOURCEDIR)/*.c)
-OBJS=$(subst .c,.o,$(SRCS))
-LIBFILE=lib$(NAME).a
-MAKEFILEDIR=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+LIBS:=$(subst ./$(SOURCEDIR)/,,$(wildcard ./$(SOURCEDIR)/*))
+SRCS:=$(wildcard ./$(SOURCEDIR)/*/*.c)
+OBJS:=$(subst .c,.o,$(SRCS))
+LIBFILE:=lib$(NAME).a
+MAKEFILEDIR:=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-all: $(NAME)
+all: $(LIBS)
 
 .PHONY: $(NAME)
-$(NAME): $(OBJS)
-	$(AR) $(LIBDIR)/lib$(NAME).a $(OBJS)
+$(LIBS): $(OBJS)
+	$(AR) $(LIBDIR)/lib$@.a $(wildcard ./$(SOURCEDIR)/$@/*.o)
 
 .PHONY: test
 test: $(NAME)
-	@(cd $(TESTDIR); $(MAKE) BINDIR="$(MAKEFILEDIR)$(BINDIR)" INCDIR="$(MAKEFILEDIR)$(INCDIR)" LIBDIR="$(MAKEFILEDIR)$(LIBDIR)" LIBNAME="$(NAME)")
+	@(cd $(TESTDIR); $(MAKE) BINDIR="$(MAKEFILEDIR)$(BINDIR)" INCDIR="$(MAKEFILEDIR)$(INCDIR)" LIBDIR="$(MAKEFILEDIR)$(LIBDIR)" LIBNAMES="$(LIBS)")
 
 .PHONY: clean
 clean:
@@ -39,7 +40,6 @@ install:
 	cp -R $(INCDIR)/* $(DESTDIR)/usr/include
 	mkdir -p $(DESTDIR)/usr/lib
 	cp -R $(LIBDIR)/* $(DESTDIR)/usr/lib
-	@(cd $(UTILDIR); $(MAKE) install BINDIR="$(MAKEFILEDIR)$(BINDIR)" INCDIR="$(MAKEFILEDIR)$(INCDIR)" LIBDIR="$(MAKEFILEDIR)$(LIBDIR)" LIBNAME="$(NAME)")
 
 .PHONY: dist-clean
 dist-clean: clean
