@@ -63,8 +63,8 @@ static void generate(int left, int top)
 	config.range.low = 0;
 	config.range.high = 1;
 	
-	ccnGenerateOpenSimplex2D(&noise, &config, 32);
-	//ccnGenerateValueNoise2D(&noise, &config, 32, CCN_INTERP_CUBIC);
+	// Generate noise
+	ccnGenerateValueNoise2D(&noise, &config, 32, CCN_INTERP_CUBIC);
 
 	// Create texture from noise
 	unsigned int i;
@@ -72,7 +72,6 @@ static void generate(int left, int top)
 		unsigned char v = (unsigned char)(noise.values[i] * 255);
 
 		pixels[i].r = pixels[i].g = pixels[i].b = v;
-		//pixels[i].b = pixels[i].r - 160;
 	}
 
 	ccnNoiseFree(noise);
