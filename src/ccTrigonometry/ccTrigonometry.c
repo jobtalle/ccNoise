@@ -29,8 +29,6 @@ float ccTriDeltaRad(float a, float b)
 	return delta;
 }
 
-// Lerp
-
 // Perp
 
 void ccTriPerpRad(float *value, float target, float factor)

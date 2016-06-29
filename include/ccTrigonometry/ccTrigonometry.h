@@ -41,8 +41,8 @@
 #define ccTriSquared(x)  ((x) * (x))
 #define ccTriCubed(x)    (ccTriSquared(x) * (x))
 
-#define ccTriDegToRad(x) ((x) * 0.017453)
-#define ccTriRadToDeg(x) ((x) * 57.295780)
+#define ccTriDegToRad(x) ((x) * 0.017453f)
+#define ccTriRadToDeg(x) ((x) * 57.295780f)
 
 #define ccTriDistance(x1, y1, x2, y2) sqrtf(ccTriSquared(x1 - x2) + ccTriSquared(y1 - y2))
 
