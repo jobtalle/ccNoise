@@ -87,7 +87,7 @@ typedef struct {
 
 void ccnGenerateWhiteNoise2D(
      ccnNoise *noise,
-     ccnNoiseConfiguration *configuration);
+	 const ccnNoiseConfiguration *configuration);
 
 // Value noise
 //
@@ -96,15 +96,15 @@ void ccnGenerateWhiteNoise2D(
 
 void ccnGenerateValueNoise1D(
      ccnNoise *noise,
-	 ccnNoiseConfiguration *configuration,
-	 uint32_t scale,
-	 ccnInterpolationMethod interpolationMethod);
+	 const ccnNoiseConfiguration *configuration,
+	 const uint32_t scale,
+	 const  ccnInterpolationMethod interpolationMethod);
 
 void ccnGenerateValueNoise2D(
      ccnNoise *noise,
-	 ccnNoiseConfiguration *configuration,
-	 uint32_t scale,
-	 ccnInterpolationMethod interpolationMethod);
+	 const ccnNoiseConfiguration *configuration,
+	 const uint32_t scale,
+	 const ccnInterpolationMethod interpolationMethod);
 
 // Worley noise
 //
@@ -117,12 +117,12 @@ void ccnGenerateValueNoise2D(
 
 void ccnGenerateWorleyNoise2D(
      ccnNoise *noise,
-	 ccnNoiseConfiguration *configuration,
-	 uint32_t points,
-	 uint32_t n,
-	 uint32_t low, uint32_t high,
-	 ccnDistanceMethod distanceMethod,
-	 ccnInterpolationMethod interpolationMethod);
+	 const ccnNoiseConfiguration *configuration,
+	 const uint32_t points,
+	 const uint32_t n,
+	 const uint32_t low, uint32_t high,
+	 const ccnDistanceMethod distanceMethod,
+	 const ccnInterpolationMethod interpolationMethod);
 
 // Perlin noise
 //
@@ -130,16 +130,16 @@ void ccnGenerateWorleyNoise2D(
 // interpolationMethod: the method by which the distance value is interpolated
 
 void ccnGeneratePerlinNoise1D(
-	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t scale,
-	ccnInterpolationMethod interpolationMethod);
+     ccnNoise *noise,
+     const ccnNoiseConfiguration *configuration,
+     const uint32_t scale,
+     const ccnInterpolationMethod interpolationMethod);
 
 void ccnGeneratePerlinNoise2D(
      ccnNoise *noise,
-     ccnNoiseConfiguration *configuration,
-     uint32_t scale,
-     ccnInterpolationMethod interpolationMethod);
+	 const ccnNoiseConfiguration *configuration,
+	 const uint32_t scale,
+	 const ccnInterpolationMethod interpolationMethod);
 
 #ifdef __cplusplus
 }

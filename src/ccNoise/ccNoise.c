@@ -16,7 +16,7 @@
 	_a > _b ? _a : _b; })
 #endif
 
-float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpolationMethod)
+float ccnInterpolate(const float a, const float b, const float x, const ccnInterpolationMethod interpolationMethod)
 {
 	switch(interpolationMethod) {
 	case CCN_INTERP_LINEAR:
@@ -34,13 +34,13 @@ float ccnInterpolate(float a, float b, float x, ccnInterpolationMethod interpola
 	}
 }
 
-float ccnInterpolateCubic(float a, float b, float c, float d, float x)
+float ccnInterpolateCubic(const float a, const float b, const float c, const float d, const float x)
 {
 	float p = (d - c) - (a - b);
 	return ccTriCubed(x) * p + ccTriSquared(x) * ((a - b) - p) + x * (c - a) + b;
 }
 
-uint32_t ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
+uint32_t ccnDistance(const ccnPoint a, const ccnPoint b, const ccnDistanceMethod distanceMethod)
 {
 	switch(distanceMethod) {
 	case CCN_DIST_MANHATTAN:
@@ -54,7 +54,7 @@ uint32_t ccnDistance(ccnPoint a, ccnPoint b, ccnDistanceMethod distanceMethod)
 	}
 }
 
-int32_t ccnWrapCoordinate(int32_t coordinate, uint32_t period) {
+int32_t ccnWrapCoordinate(int32_t coordinate, const uint32_t period) {
 	int32_t positiveDeviation, negativeDeviation;
 
 	if(period == CCN_INFINITE || period == 0) return coordinate;
@@ -72,7 +72,7 @@ int32_t ccnWrapCoordinate(int32_t coordinate, uint32_t period) {
 	return coordinate;
 }
 
-void ccnStore(float *buffer, ccnStoreMethod method, float value)
+void ccnStore(float *buffer, const ccnStoreMethod method, const float value)
 {
 	switch(method) {
 	case CCN_STORE_SET:
@@ -93,6 +93,6 @@ void ccnStore(float *buffer, ccnStoreMethod method, float value)
 	}
 }
 
-int32_t ccnFloorMod(int32_t x, int32_t y) {
+int32_t ccnFloorMod(const int32_t x, const int32_t y) {
 	return x >= 0?x % y:y + ((x + 1) % y) - 1;
 }

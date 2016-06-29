@@ -6,19 +6,18 @@
 
 void ccnGenerateValueNoise1D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t scale,
-	ccnInterpolationMethod interpolationMethod)
+	const ccnNoiseConfiguration *configuration,
+	const uint32_t scale,
+	const ccnInterpolationMethod interpolationMethod)
 {
-	uint32_t size = noise->width;
-	uint32_t steps = (uint32_t)ceil((float)size / scale);
+	const uint32_t steps = (uint32_t)ceil((float)noise->width / scale);
 	uint32_t i, j;
 	uint32_t period;
 	uint32_t interpolationOffset = 0;
 	int32_t coordinateOffset = configuration->x * steps;
 
-	float multiplier = configuration->range.high - configuration->range.low;
-	float *bufferedValues;
+	const float multiplier = configuration->range.high - configuration->range.low;
+	float bufferedValues[4];
 
 #ifdef _DEBUG
 	assert(!(scale & (scale - 1)));
@@ -36,17 +35,15 @@ void ccnGenerateValueNoise1D(
 		period = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
 	}
 
-	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
-
-	for(i = 0; i < size; i++) {
-		uint32_t oct = i / scale;
-		float factor = (float)(i - oct * scale) / scale;
-
+	for(i = 0; i < noise->width; i++) {
+		const uint32_t oct = i / scale;
+		const float factor = (float)(i - oct * scale) / scale;
+		
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
 			if(factor == 0) {
 				if(i == 0) {
-					for(j = 0; j < 4;) {
-						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct - 1 + j++ + coordinateOffset, period), 0);
+					for(j = 0; j < 4; ++j) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct - 1 + j + coordinateOffset, period), 0);
 					}
 				}
 				else {
@@ -63,8 +60,8 @@ void ccnGenerateValueNoise1D(
 		else {
 			if(factor == 0) {
 				if(i == 0) {
-					for(j = 0; j < 2;) {
-						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + j++ + coordinateOffset, period), 0);
+					for(j = 0; j < 2; ++j) {
+						bufferedValues[j] = ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(oct + j + coordinateOffset, period), 0);
 					}
 				}
 				else {
@@ -77,30 +74,28 @@ void ccnGenerateValueNoise1D(
 			ccnStore(noise->values + i, configuration->storeMethod, ccnInterpolate(bufferedValues[0], bufferedValues[1], factor + (float)interpolationOffset / scale, interpolationMethod) * multiplier + configuration->range.low);
 		}
 	}
-
-	free(bufferedValues);
 }
 
 void ccnGenerateValueNoise2D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t scale,
-	ccnInterpolationMethod interpolationMethod)
+	const ccnNoiseConfiguration *configuration,
+	const uint32_t scale,
+	const ccnInterpolationMethod interpolationMethod)
 {
-	uint32_t size = noise->width * noise->height;
-	uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
-	uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
+	const uint32_t size = noise->width * noise->height;
+	const uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
+	const uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
+	const uint32_t interpolationYoffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
 	uint32_t offsetHeight;
 	uint32_t xPeriod;
 	uint32_t yPeriod;
 	uint32_t xOffset = 0;
 	uint32_t yOffset = 0;
-	uint32_t interpolationYoffset = interpolationMethod == CCN_INTERP_CUBIC?1:0;
 	uint32_t i, j, k;
 
-	float multiplier = configuration->range.high - configuration->range.low;
+	const float multiplier = configuration->range.high - configuration->range.low;
 	float *xValues;
-	float *bufferedValues;
+	float bufferedValues[4];
 
 	ccnPoint coordinateOffset = (ccnPoint){ configuration->x * xSteps, configuration->y * ySteps };
 
@@ -128,13 +123,11 @@ void ccnGenerateValueNoise2D(
 
 	offsetHeight = ySteps + (interpolationMethod == CCN_INTERP_CUBIC?3:1);
 	xValues = malloc(noise->width * offsetHeight * sizeof(float));
-	bufferedValues = malloc(sizeof(float)* (interpolationMethod == CCN_INTERP_CUBIC?4:2));
 
 	for(i = 0; i < offsetHeight; ++i) {
 		for(j = 0; j < noise->width; ++j) {
-			uint32_t octX = j / scale;
-
-			float factor = (float)(j - octX * scale) / scale;
+			const uint32_t octX = j / scale;
+			const float factor = (float)(j - octX * scale) / scale;
 
 			if(interpolationMethod == CCN_INTERP_CUBIC) {
 				if(factor == 0) {
@@ -172,12 +165,12 @@ void ccnGenerateValueNoise2D(
 	}
 
 	for(i = 0; i < size; ++i) {
-		uint32_t Y = i / noise->width;
-		uint32_t octY = Y / scale;
-		uint32_t index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
+		const uint32_t Y = i / noise->width;
+		const uint32_t octY = Y / scale;
+		const uint32_t index = (i - Y * noise->width) + (octY + interpolationYoffset) * noise->width;
 
-		float factor = (float)(Y - octY * scale) / scale;
-		float interpFactor = factor + (float)yOffset / scale;
+		const float factor = (float)(Y - octY * scale) / scale;
+		const float interpFactor = factor + (float)yOffset / scale;
 
 		if(interpolationMethod == CCN_INTERP_CUBIC) {
 			ccnStore(noise->values + i, configuration->storeMethod, (ccnInterpolateCubic(xValues[index - noise->width], xValues[index], xValues[index + noise->width], xValues[index + (noise->width << 1)], interpFactor) * .5f + 0.25f) * multiplier + configuration->range.low);
@@ -188,5 +181,4 @@ void ccnGenerateValueNoise2D(
 	}
 
 	free(xValues);
-	free(bufferedValues);
 }

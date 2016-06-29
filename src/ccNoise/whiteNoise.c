@@ -2,11 +2,11 @@
 
 void ccnGenerateWhiteNoise2D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration)
+	const ccnNoiseConfiguration *configuration)
 {
-	uint32_t size = noise->width * noise->height;
+	const uint32_t size = noise->width * noise->height;
+	const float multiplier = configuration->range.high - configuration->range.low;
 	uint32_t i;
-	float multiplier = configuration->range.high - configuration->range.low;
 
 	for(i = 0; i < size; ++i) {
 		int32_t Y = i / noise->width;

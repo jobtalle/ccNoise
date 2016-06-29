@@ -8,12 +8,11 @@
 
 void ccnGeneratePerlinNoise1D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t scale,
-	ccnInterpolationMethod interpolationMethod)
+	const ccnNoiseConfiguration *configuration,
+	const uint32_t scale,
+	const ccnInterpolationMethod interpolationMethod)
 {
-	uint32_t size = noise->width;
-	uint32_t steps = (uint32_t)ceil((float)noise->width / scale);
+	const uint32_t steps = (uint32_t)ceil((float)noise->width / scale);
 	uint32_t interpolationOffset = 0;
 	uint32_t period;
 	uint32_t i;
@@ -40,15 +39,15 @@ void ccnGeneratePerlinNoise1D(
 		period = (uint32_t)(configuration->tileConfiguration.xPeriod * ((float)noise->width / scale));
 	}
 
-	for(i = 0; i <= steps;) {
-		vectors[i] = cosf((float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i++ + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE));
+	for(i = 0; i <= steps; ++i) {
+		vectors[i] = cosf((float)(ccrGenerateFloatCoordinate(configuration->seed, ccnWrapCoordinate(i + coordinateOffset, period), 0) * CC_TRI_PI_DOUBLE));
 	}
 
-	for(i = 0; i < size;) {
-		uint32_t step = i / scale;
-		float vec = (float)(i + interpolationOffset - step * scale) / scale;
+	for(i = 0; i < noise->width; ++i) {
+		const uint32_t step = i / scale;
+		const float vec = (float)(i + interpolationOffset - step * scale) / scale;
 
-		ccnStore(noise->values + i++, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
+		ccnStore(noise->values + i, configuration->storeMethod, (float)((ccnInterpolate(vectors[step] * vec, vectors[step + 1] * (vec - 1.0f), vec, interpolationMethod) + _CCN_PERLIN_NORMALIZER) * multiplier * _CCN_PERLIN_NORMALIZER) + configuration->range.low);
 	}
 
 	free(vectors);
@@ -56,14 +55,14 @@ void ccnGeneratePerlinNoise1D(
 
 void ccnGeneratePerlinNoise2D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t scale,
-	ccnInterpolationMethod interpolationMethod)
+	const ccnNoiseConfiguration *configuration,
+	const uint32_t scale,
+	const ccnInterpolationMethod interpolationMethod)
 {
-	uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
-	uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
-	uint32_t totalSteps = (xSteps + 1) * (ySteps + 1);
-	uint32_t size = noise->width * noise->height;
+	const uint32_t xSteps = (uint32_t)ceil((float)noise->width / scale);
+	const uint32_t ySteps = (uint32_t)ceil((float)noise->height / scale);
+	const uint32_t totalSteps = (xSteps + 1) * (ySteps + 1);
+	const uint32_t size = noise->width * noise->height;
 	uint32_t xPeriod;
 	uint32_t yPeriod;
 	uint32_t xOffset = 0;

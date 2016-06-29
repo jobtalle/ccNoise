@@ -15,17 +15,17 @@ static int32_t ccnWorleyCompare(const void *a, const void *b)
 
 void ccnGenerateWorleyNoise2D(
 	ccnNoise *noise,
-	ccnNoiseConfiguration *configuration,
-	uint32_t points,
-	uint32_t n,
-	uint32_t low, uint32_t high,
-	ccnDistanceMethod distanceMethod,
-	ccnInterpolationMethod interpolationMethod)
+	const ccnNoiseConfiguration *configuration,
+	const uint32_t points,
+	const uint32_t n,
+	const uint32_t low, uint32_t high,
+	const ccnDistanceMethod distanceMethod,
+	const ccnInterpolationMethod interpolationMethod)
 {
-	uint32_t size = noise->width * noise->height;
+	const uint32_t size = noise->width * noise->height;
+	const uint32_t pointListSize = points * 9;
 	uint32_t i, j;
 	uint32_t pointId = 0;
-	uint32_t pointListSize = points * 9;
 	uint32_t xPeriod = configuration->tileConfiguration.xPeriod;
 	uint32_t yPeriod = configuration->tileConfiguration.yPeriod;
 	ccnPoint offset;
@@ -62,7 +62,7 @@ void ccnGenerateWorleyNoise2D(
 
 		pointId = 0;
 		for(j = 0; j < pointListSize; j++) {
-			uint32_t manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
+			const uint32_t manhattanDistance = ccnDistance(p, pointList[j], CCN_DIST_MANHATTAN);
 
 			if(manhattanDistance < maxManhattanDistance) {
 				if(distanceMethod == CCN_DIST_MANHATTAN) {
